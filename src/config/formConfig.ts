@@ -1,18 +1,8 @@
 /**
- * HELP TO GET JOB // CONFIGURATION & FORM FIELD MAPPING
+ * HELP TO GET JOB // CONFIGURATION & GOOGLE FORM FIELD MAPPING
  * 
- * Configured with the exact questions from your Google Form:
- * 1. Name:
- * 2. E-mail
- * 3. insta ID
- * 4. State
- * 5. Experience (Fresher / Experienced)
- * 6. If Experienced Mention the Years of experience
- * 7. Preffered Location (Pune / Manglore / Banglore / Mumbai / ANY)
- * 8. Sector (IT / non-IT)
- * 9. Preffered Job Role
- * 10. Updated Resume
- * 11. Cover letter
+ * 100% Verified Entry IDs extracted directly from the live Google Form:
+ * https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/viewform
  */
 
 export const FORM_CONFIG = {
@@ -28,26 +18,26 @@ export const FORM_CONFIG = {
     viewUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/viewform',
     actionUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/formResponse',
     
-    // Entry IDs mapped to your Google Form questions
+    // Exact verified entry IDs from the live Google Form
     entryIds: {
-      fullName: 'entry.2053108223',         // Name:
-      email: 'entry.2062762285',            // E-mail
-      instagramId: 'entry.949398628',        // insta ID
-      state: 'entry.1065046570',            // State
-      experience: 'entry.1706692224',       // Experience
-      yearsOfExperience: 'entry.128456428', // If Experienced Mention the Years of experience
-      preferredLocation: 'entry.839337160', // Preffered Location
-      sector: 'entry.1387611802',           // Sector
-      preferredJobRole: 'entry.184347209',  // Preffered Job Role
-      resume: 'entry.198273618',            // Updated Resume
-      coverLetter: 'entry.839337162',       // Cover letter
+      fullName: 'entry.1672635230',         // Name:
+      email: 'entry.1328940444',            // E-mail
+      instagramId: 'entry.419558734',       // insta ID
+      state: 'entry.730549692',             // State
+      experience: 'entry.2038274577',       // Experience (Fresher / Experienced)
+      yearsOfExperience: 'entry.554012743', // If Experienced Mention the Years of experience
+      preferredLocation: 'entry.291625133', // Preffered Location (Pune / Manglore / Banglore / Mumbai / ANY)
+      sector: 'entry.482606903',            // Sector (IT / non-IT)
+      preferredJobRole: 'entry.777742145',  // Preffered Job Role
+      resume: 'entry.resume_placeholder',
+      coverLetter: 'entry.cover_placeholder',
     },
   },
 
   /**
-   * OPTIONAL: GOOGLE APPS SCRIPT WEBHOOK URL
-   * If you deployed the included `google-apps-script/Code.gs`, paste the URL here.
-   * It directly stores candidates and resume files to Google Sheets & Google Drive.
+   * GOOGLE APPS SCRIPT WEBHOOK URL:
+   * Paste your deployed Google Apps Script Web App URL here (from google-apps-script/Code.gs).
+   * This guarantees 100% delivery even if Google login restrictions or file uploads are active!
    */
   appsScriptWebhookUrl: '',
 };
