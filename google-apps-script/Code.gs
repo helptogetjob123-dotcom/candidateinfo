@@ -13,9 +13,9 @@
  * 6. Copy the Web app URL and paste it into src/config/formConfig.ts.
  */
 
-// Paste your Google Drive Folder ID here if you have a specific folder:
-// (You can get the ID from the folder URL: https://drive.google.com/drive/folders/YOUR_FOLDER_ID)
-var TARGET_FOLDER_ID = "";
+// Google Drive Folder ID for candidate resume uploads:
+// https://drive.google.com/drive/folders/1CLChOttzhBMScvJbRbx2fO6vVsYQZuRj
+var TARGET_FOLDER_ID = "1CLChOttzhBMScvJbRbx2fO6vVsYQZuRj";
 
 function doPost(e) {
   try {
