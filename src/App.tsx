@@ -10,8 +10,8 @@ import { FORM_CONFIG } from './config/formConfig';
 import { Instagram, Shield, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 
 export const App: React.FC = () => {
-  // 'embedded' is default for 100% guaranteed response recording and native Drive upload
-  const [formMode, setFormMode] = useState<'embedded' | 'native'>('embedded');
+  // 'native' is default for the 100% custom website form with direct Drive & Sheet integration
+  const [formMode, setFormMode] = useState<'embedded' | 'native'>('native');
   const [submissionResult, setSubmissionResult] = useState<FormSubmissionResult | null>(null);
 
   const handleReset = () => {
@@ -112,17 +112,16 @@ export const App: React.FC = () => {
           <div className="max-w-2xl mx-auto">
             {!submissionResult ? (
               <div>
-                <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-center justify-between">
-                  <span>
-                    <strong>Note:</strong> Custom form mode requires the Google Apps Script Webhook to be active in formConfig.ts.
-                  </span>
-                  <button
-                    onClick={() => setFormMode('embedded')}
-                    className="underline font-semibold ml-2 text-white hover:text-blue-300"
-                  >
-                    Switch to Official Form
-                  </button>
-                </div>
+                {!FORM_CONFIG.appsScriptWebhookUrl && (
+                  <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 flex items-center justify-between gap-3 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                      <span>
+                        <strong>Backend Ready:</strong> Deploy the script in <code className="bg-dark-bg px-1.5 py-0.5 rounded text-white">google-apps-script/Code.gs</code> to your Google Sheet to connect your Drive folder.
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <ApplicationForm onSubmitSuccess={setSubmissionResult} />
               </div>
             ) : (

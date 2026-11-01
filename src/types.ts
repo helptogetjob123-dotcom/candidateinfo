@@ -38,5 +38,6 @@ export interface FormSubmissionResult {
   sector: string;
   preferredJobRole: string;
   resumeName: string;
+  resumeDriveLink?: string;
   coverLetterName?: string;
 }

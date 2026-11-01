@@ -74,7 +74,20 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-400 font-medium">Updated Resume:</span>
-            <span className="text-green-400 font-medium">{result.resumeName}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-green-400 font-medium">{result.resumeName}</span>
+              {result.resumeDriveLink && result.resumeDriveLink.startsWith('http') && (
+                <a
+                  href={result.resumeDriveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-blue-400 hover:underline flex items-center gap-0.5 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20"
+                >
+                  <span>Drive</span>
+                  <span>↗</span>
+                </a>
+              )}
+            </div>
           </div>
           {result.coverLetterName && (
             <div className="flex items-center justify-between">

@@ -35,11 +35,21 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
   const [formData, setFormData] = useState<CandidateFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatusMessage, setSubmitStatusMessage] = useState<string>('Submitting Application...');
   const [isResumeDragging, setIsResumeDragging] = useState(false);
   const [resumeError, setResumeError] = useState<string>('');
 
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const coverLetterInputRef = useRef<HTMLInputElement>(null);
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string) || '');
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Dynamic progress tracker
   const calculateProgress = () => {
@@ -193,90 +203,132 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
     }
 
     setIsSubmitting(true);
+    setSubmitStatusMessage('Encoding resume document...');
     const transmissionId = generateTransmissionId();
     const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
     try {
-      // 1. Silent Google Form POST via hidden iframe
-      const formEl = document.createElement('form');
-      formEl.action = FORM_CONFIG.googleForm.actionUrl;
-      formEl.method = 'POST';
-      formEl.target = 'hidden_submission_target';
-      formEl.style.display = 'none';
-
-      const entryMap: Record<string, string> = {
-        [FORM_CONFIG.googleForm.entryIds.fullName]: formData.fullName.trim(),
-        [FORM_CONFIG.googleForm.entryIds.email]: formData.email.trim(),
-        [FORM_CONFIG.googleForm.entryIds.instagramId]: formData.instagramId.trim() || 'N/A',
-        [FORM_CONFIG.googleForm.entryIds.state]: formData.state.trim(),
-        [FORM_CONFIG.googleForm.entryIds.experience]: formData.experience,
-        [FORM_CONFIG.googleForm.entryIds.yearsOfExperience]:
-          formData.experience === 'Experienced' ? formData.yearsOfExperience.trim() : '0',
-        [FORM_CONFIG.googleForm.entryIds.preferredLocation]: formData.preferredLocation,
-        [FORM_CONFIG.googleForm.entryIds.sector]: formData.sector,
-        [FORM_CONFIG.googleForm.entryIds.preferredJobRole]: formData.preferredJobRole.trim(),
-        // Hidden required Google Form tokens
-        fvv: '1',
-        pageHistory: '0',
-        // Radio sentinels
-        [`${FORM_CONFIG.googleForm.entryIds.experience}_sentinel`]: '',
-        [`${FORM_CONFIG.googleForm.entryIds.preferredLocation}_sentinel`]: '',
-        [`${FORM_CONFIG.googleForm.entryIds.sector}_sentinel`]: '',
-      };
-
-      // Only add resume/coverLetter if valid entry IDs exist
-      if (!FORM_CONFIG.googleForm.entryIds.resume.includes('placeholder')) {
-        entryMap[FORM_CONFIG.googleForm.entryIds.resume] =
-          formData.resumeCloudLink.trim() ||
-          (formData.resumeFile ? `Uploaded Resume: ${formData.resumeFileName}` : 'Pending');
-      }
-      if (!FORM_CONFIG.googleForm.entryIds.coverLetter.includes('placeholder')) {
-        entryMap[FORM_CONFIG.googleForm.entryIds.coverLetter] =
-          formData.coverLetterFileName ? `Uploaded Cover Letter: ${formData.coverLetterFileName}` : (formData.coverLetterText.trim() || 'N/A');
-      }
-
-      Object.entries(entryMap).forEach(([k, v]) => {
-        const inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = k;
-        inp.value = v;
-        formEl.appendChild(inp);
-      });
-
-      document.body.appendChild(formEl);
-      formEl.submit();
-
-      setTimeout(() => {
-        if (document.body.contains(formEl)) document.body.removeChild(formEl);
-      }, 1000);
-
-      // Redundant background fetch
-      try {
-        const params = new URLSearchParams();
-        Object.entries(entryMap).forEach(([k, v]) => params.append(k, v));
-        fetch(FORM_CONFIG.googleForm.actionUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: params.toString(),
-        }).catch(() => {});
-      } catch {}
-
-      // Webhook dispatch if configured
-      if (FORM_CONFIG.appsScriptWebhookUrl) {
+      // 1. Process files into Base64 for Google Drive storage
+      let resumeBase64 = '';
+      if (formData.resumeFile) {
         try {
-          fetch(FORM_CONFIG.appsScriptWebhookUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              transmissionId,
-              timestamp,
-              formData: { ...formData, resumeFile: undefined, coverLetterFile: undefined },
-            }),
-          }).catch(() => {});
-        } catch {}
+          resumeBase64 = await readFileAsBase64(formData.resumeFile);
+        } catch (fErr) {
+          console.warn('Resume file encoding issue:', fErr);
+        }
       }
+
+      let coverLetterBase64 = '';
+      if (formData.coverLetterFile) {
+        try {
+          coverLetterBase64 = await readFileAsBase64(formData.coverLetterFile);
+        } catch (clErr) {
+          console.warn('Cover letter encoding issue:', clErr);
+        }
+      }
+
+      setSubmitStatusMessage('Uploading to Google Drive & logging response...');
+
+      let resolvedResumeDriveLink: string | undefined = undefined;
+
+      // 2. Primary Transmission: Google Apps Script Webhook (Direct Drive & Sheet Sync)
+      if (FORM_CONFIG.appsScriptWebhookUrl && FORM_CONFIG.appsScriptWebhookUrl.trim() !== '') {
+        try {
+          const payload = {
+            transmissionId,
+            timestamp,
+            formData: {
+              fullName: formData.fullName.trim(),
+              email: formData.email.trim(),
+              instagramId: formData.instagramId.trim() || 'N/A',
+              state: formData.state.trim(),
+              experience: formData.experience,
+              yearsOfExperience: formData.experience === 'Experienced' ? formData.yearsOfExperience.trim() : '0',
+              preferredLocation: formData.preferredLocation,
+              sector: formData.sector,
+              preferredJobRole: formData.preferredJobRole.trim(),
+              resumeFileName: formData.resumeFileName,
+              resumeBase64: resumeBase64,
+              resumeCloudLink: formData.resumeCloudLink.trim(),
+              coverLetterText: formData.coverLetterText.trim(),
+              coverLetterFileName: formData.coverLetterFileName,
+              coverLetterBase64: coverLetterBase64,
+            },
+          };
+
+          // Use text/plain;charset=utf-8 to bypass browser CORS preflight blocks
+          const webhookRes = await fetch(FORM_CONFIG.appsScriptWebhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (webhookRes.ok) {
+            try {
+              const resData = await webhookRes.json();
+              if (resData && resData.resumeDriveLink) {
+                resolvedResumeDriveLink = resData.resumeDriveLink;
+              }
+            } catch {}
+          }
+        } catch (webhookErr) {
+          console.log('Webhook dispatched to Google Cloud:', webhookErr);
+        }
+      }
+
+      // 3. Fallback: Silent Google Form submission via hidden iframe (if configured)
+      try {
+        const formEl = document.createElement('form');
+        formEl.action = FORM_CONFIG.googleForm.actionUrl;
+        formEl.method = 'POST';
+        formEl.target = 'hidden_submission_target';
+        formEl.style.display = 'none';
+
+        const entryMap: Record<string, string> = {
+          [FORM_CONFIG.googleForm.entryIds.fullName]: formData.fullName.trim(),
+          [FORM_CONFIG.googleForm.entryIds.email]: formData.email.trim(),
+          [FORM_CONFIG.googleForm.entryIds.instagramId]: formData.instagramId.trim() || 'N/A',
+          [FORM_CONFIG.googleForm.entryIds.state]: formData.state.trim(),
+          [FORM_CONFIG.googleForm.entryIds.experience]: formData.experience,
+          [FORM_CONFIG.googleForm.entryIds.yearsOfExperience]:
+            formData.experience === 'Experienced' ? formData.yearsOfExperience.trim() : '0',
+          [FORM_CONFIG.googleForm.entryIds.preferredLocation]: formData.preferredLocation,
+          [FORM_CONFIG.googleForm.entryIds.sector]: formData.sector,
+          [FORM_CONFIG.googleForm.entryIds.preferredJobRole]: formData.preferredJobRole.trim(),
+          fvv: '1',
+          pageHistory: '0',
+          [`${FORM_CONFIG.googleForm.entryIds.experience}_sentinel`]: '',
+          [`${FORM_CONFIG.googleForm.entryIds.preferredLocation}_sentinel`]: '',
+          [`${FORM_CONFIG.googleForm.entryIds.sector}_sentinel`]: '',
+        };
+
+        if (!FORM_CONFIG.googleForm.entryIds.resume.includes('placeholder')) {
+          entryMap[FORM_CONFIG.googleForm.entryIds.resume] =
+            formData.resumeCloudLink.trim() ||
+            (formData.resumeFile ? `Uploaded Resume: ${formData.resumeFileName}` : 'Pending');
+        }
+        if (!FORM_CONFIG.googleForm.entryIds.coverLetter.includes('placeholder')) {
+          entryMap[FORM_CONFIG.googleForm.entryIds.coverLetter] =
+            formData.coverLetterFileName ? `Uploaded Cover Letter: ${formData.coverLetterFileName}` : (formData.coverLetterText.trim() || 'N/A');
+        }
+
+        Object.entries(entryMap).forEach(([k, v]) => {
+          const inp = document.createElement('input');
+          inp.type = 'hidden';
+          inp.name = k;
+          inp.value = v;
+          formEl.appendChild(inp);
+        });
+
+        document.body.appendChild(formEl);
+        formEl.submit();
+
+        setTimeout(() => {
+          if (document.body.contains(formEl)) document.body.removeChild(formEl);
+        }, 1000);
+      } catch {}
 
       const result: FormSubmissionResult = {
         transmissionId,
@@ -291,13 +343,14 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         sector: formData.sector,
         preferredJobRole: formData.preferredJobRole.trim(),
         resumeName: formData.resumeFileName || formData.resumeCloudLink || 'Submitted',
+        resumeDriveLink: resolvedResumeDriveLink,
         coverLetterName: formData.coverLetterFileName || (formData.coverLetterText ? 'Provided' : undefined),
       };
 
       setTimeout(() => {
         setIsSubmitting(false);
         onSubmitSuccess(result);
-      }, 400);
+      }, 500);
 
     } catch (err) {
       console.error('Submission failed:', err);
@@ -691,7 +744,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Submitting Application...
+                <span>{submitStatusMessage}</span>
               </span>
             ) : (
               'Submit Application'
