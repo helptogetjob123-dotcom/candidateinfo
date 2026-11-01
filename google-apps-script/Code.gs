@@ -13,6 +13,10 @@
  * 6. Copy the Web app URL and paste it into src/config/formConfig.ts.
  */
 
+// Google Sheet ID for candidate data rows:
+// https://docs.google.com/spreadsheets/d/1UDzaOSSB02uK3JT59VMg85oiQORxRUNt0_vMh7vCeWE
+var SPREADSHEET_ID = "1UDzaOSSB02uK3JT59VMg85oiQORxRUNt0_vMh7vCeWE";
+
 // Google Drive Folder ID for candidate resume uploads:
 // https://drive.google.com/drive/folders/1CLChOttzhBMScvJbRbx2fO6vVsYQZuRj
 var TARGET_FOLDER_ID = "1CLChOttzhBMScvJbRbx2fO6vVsYQZuRj";
@@ -102,8 +106,18 @@ function doPost(e) {
       coverLetterInfo = formData.coverLetterText.trim();
     }
 
-    // 4. Append Candidate Data Row into Google Sheet
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    // 4. Resolve Target Google Sheet
+    var spreadsheet;
+    if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
+      try {
+        spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+      } catch (ssErr) {
+        spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+      }
+    } else {
+      spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    }
+    var sheet = spreadsheet.getSheets()[0];
     
     // Ensure header row exists with the exact form questions if empty
     if (sheet.getLastRow() === 0) {
@@ -162,7 +176,8 @@ function doGet(e) {
   return createJsonResponse({
     status: "online",
     system: "Help to Get Job - Candidate Intake Webhook",
-    folderIdConfigured: TARGET_FOLDER_ID ? "Yes" : "Auto-create Mode",
+    spreadsheetConfigured: SPREADSHEET_ID ? "Connected (1UDzaOSSB02uK3JT59VMg85oiQORxRUNt0_vMh7vCeWE)" : "Active Spreadsheet",
+    folderIdConfigured: TARGET_FOLDER_ID ? "Connected (1CLChOttzhBMScvJbRbx2fO6vVsYQZuRj)" : "Auto-create Mode",
     timestamp: new Date().toISOString()
   });
 }
