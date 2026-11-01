@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing & Coverage
+coverage
+
+# Production Build Output (Can be pushed to gh-pages branch or built via GitHub Actions)
+dist
+dist-ssr
+*.local
+
+# Editor & OS files
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.idea
+.vscode
+*.log
+
+# Env files
+.env
+.env.*
+!.env.example
