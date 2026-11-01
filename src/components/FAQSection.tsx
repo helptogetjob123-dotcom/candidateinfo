@@ -12,7 +12,7 @@ export const FAQSection: React.FC = () => {
   const faqs: FAQItem[] = [
     {
       q: 'Where will my uploaded resume and data be saved?',
-      a: 'Your resume is uploaded securely into our dedicated Google Drive folder, and your profile details are recorded into our recruitment Google Sheet. Only verified mentorship and recruitment partners have viewing access.',
+      a: 'Your resume and profile details are uploaded securely into our private candidate database. Only verified mentorship and recruitment partners have access to review and refer you.',
     },
     {
       q: 'Is there any registration fee or charge?',

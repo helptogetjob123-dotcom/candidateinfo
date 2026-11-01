@@ -244,7 +244,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         }
       }
 
-      setSubmitStatusMessage('Uploading to Google Drive & logging response...');
+      setSubmitStatusMessage('Uploading resume & logging response...');
 
       let resolvedResumeDriveLink: string | undefined = undefined;
 
@@ -671,7 +671,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                 4. Resume & Documents
               </h2>
               <p className="text-xs text-google-text-secondary">
-                Upload your updated resume. Files are saved securely in our Google Drive.
+                Upload your updated resume. Supported formats: PDF, DOCX, DOC (up to 10MB).
               </p>
             </div>
           </div>
@@ -735,7 +735,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                         <span>{formatFileSize(formData.resumeFileSize)}</span>
                         <span>•</span>
                         <span className="text-google-green flex items-center gap-1 font-medium">
-                          <CheckCircle className="w-3 h-3" /> Ready to upload to Drive
+                          <CheckCircle className="w-3 h-3" /> Ready to submit
                         </span>
                       </p>
                     </div>
@@ -846,9 +846,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         <div className="google-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 text-xs text-google-text-secondary text-center sm:text-left">
             <ShieldCheck className="w-4 h-4 text-google-green shrink-0" />
-            <span>
-              Your data is encrypted and saved directly into Google Drive and Google Sheets.
-            </span>
+            <span>All applications are confidential and reviewed directly by verified hiring mentors.</span>
           </div>
 
           <button

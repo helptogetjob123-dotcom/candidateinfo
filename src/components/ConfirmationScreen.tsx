@@ -28,7 +28,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             Application Submitted
           </h1>
           <p className="text-google-text-secondary text-sm mt-2 max-w-md mx-auto leading-relaxed">
-            Thank you for applying! Your dossier has been securely recorded into our recruiter database and Google Drive.
+            Thank you for applying! Your application has been securely recorded into our candidate database.
           </p>
         </div>
 
