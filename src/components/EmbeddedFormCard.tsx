@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
+import { ExternalLink, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, FileText, Moon, Sun } from 'lucide-react';
 import { FORM_CONFIG } from '../config/formConfig';
 
 interface EmbeddedFormCardProps {
@@ -13,6 +13,7 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const [isDarkModeFilter, setIsDarkModeFilter] = useState(true);
 
   const handleRefresh = () => {
     setIsLoading(true);
@@ -57,7 +58,7 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
       {/* Main Form Framing Container */}
       <div className="bg-dark-card border border-dark-border rounded-2xl shadow-2xl overflow-hidden transition-all duration-200">
         {/* Terminal / App Header Bar */}
-        <div className="bg-[#131B2E] border-b border-dark-border px-4 py-3 sm:px-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#111726] border-b border-dark-border px-4 py-3 sm:px-5 flex flex-wrap items-center justify-between gap-3">
           {/* Left: Window Controls & Title */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -77,12 +78,31 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
             </div>
           </div>
 
-          {/* Right: Actions */}
+          {/* Right: Theme Filter Toggle & Actions */}
           <div className="flex items-center gap-2">
+            {/* Dark Theme Match Toggle */}
+            <button
+              onClick={() => setIsDarkModeFilter(!isDarkModeFilter)}
+              title={isDarkModeFilter ? 'Switch to Standard Light View' : 'Switch to Dark Match View'}
+              className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-dark-bg/80 hover:bg-dark-bg border border-dark-border px-2.5 py-1.5 rounded-lg transition-colors"
+            >
+              {isDarkModeFilter ? (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-[11px] font-medium">Dark Mode Matched</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[11px] font-medium">Original Light</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleRefresh}
               title="Refresh form"
-              className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-dark-bg/60 hover:bg-dark-bg border border-dark-border px-2.5 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-dark-bg/80 hover:bg-dark-bg border border-dark-border px-2.5 py-1.5 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Refresh</span>
@@ -102,7 +122,7 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
         </div>
 
         {/* Informative Sub-header Banner */}
-        <div className="bg-[#0e1627] px-4 py-2.5 border-b border-dark-border/60 flex items-center justify-between text-xs text-gray-400">
+        <div className="bg-[#0c1220] px-4 py-2.5 border-b border-dark-border/60 flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Direct submission to our career guidance database & Google Drive.</span>
@@ -112,34 +132,34 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
           </span>
         </div>
 
-        {/* Embedded Iframe Container */}
-        <div className="relative w-full bg-white min-h-[700px]">
-          {/* Skeleton Loader */}
+        {/* Embedded Iframe Container (Dark Background) */}
+        <div className="relative w-full bg-[#0A0E17] min-h-[700px] overflow-hidden">
+          {/* Dark Skeleton Loader */}
           {isLoading && (
-            <div className="absolute inset-0 bg-white z-10 flex flex-col items-center justify-center p-6 space-y-6">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center animate-pulse">
+            <div className="absolute inset-0 bg-[#0A0E17] z-10 flex flex-col items-center justify-center p-6 space-y-6">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center animate-pulse">
                 <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
               </div>
               
               <div className="text-center space-y-2 max-w-sm">
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-sm font-semibold text-gray-200">
                   Loading Official Candidate Intake Form...
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   Connecting directly to Google Cloud for secure resume upload and real-time response recording.
                 </p>
               </div>
 
-              {/* Pulsing Placeholder Cards */}
-              <div className="w-full max-w-md space-y-3 pt-4 opacity-60">
-                <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
-                <div className="h-14 bg-gray-100 rounded-lg animate-pulse" />
-                <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+              {/* Pulsing Dark Placeholder Cards */}
+              <div className="w-full max-w-md space-y-3 pt-4 opacity-50">
+                <div className="h-10 bg-dark-card border border-dark-border rounded-lg animate-pulse" />
+                <div className="h-14 bg-dark-card border border-dark-border rounded-lg animate-pulse" />
+                <div className="h-20 bg-dark-card border border-dark-border rounded-lg animate-pulse" />
               </div>
             </div>
           )}
 
-          {/* Google Form Iframe */}
+          {/* Google Form Iframe with Dark Match Filter */}
           <iframe
             key={reloadKey}
             src={embedUrl}
@@ -150,12 +170,16 @@ export const EmbeddedFormCard: React.FC<EmbeddedFormCardProps> = ({
             marginHeight={0}
             marginWidth={0}
             onLoad={() => setIsLoading(false)}
-            className={`w-full border-0 transition-opacity duration-300 ${
+            className={`w-full border-0 transition-all duration-300 ${
               isLoading ? 'opacity-0' : 'opacity-100'
             }`}
             style={{
               minHeight: '1850px',
               display: 'block',
+              filter: isDarkModeFilter
+                ? 'invert(0.92) hue-rotate(180deg) contrast(1.05) brightness(0.95)'
+                : 'none',
+              backgroundColor: isDarkModeFilter ? '#0A0E17' : '#ffffff',
             }}
           >
             Loading…
