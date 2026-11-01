@@ -87,7 +87,7 @@ export const App: React.FC = () => {
                 Join 10,000+ Job Seekers on Instagram
               </h3>
               <p className="text-xs text-google-text-secondary max-w-md leading-relaxed">
-                Follow <strong className="text-google-text-primary">@helptogetjob</strong> for daily walk-in alerts, ATS resume templates, and direct recruiter Q&As.
+                Follow <strong className="text-google-text-primary">{FORM_CONFIG.brand.instagramHandle}</strong> for daily walk-in alerts, ATS resume templates, and direct recruiter Q&As.
               </p>
             </div>
 
@@ -97,7 +97,7 @@ export const App: React.FC = () => {
               rel="noopener noreferrer"
               className="btn-google-primary text-xs sm:text-sm px-5 py-2.5 flex items-center gap-2 shrink-0"
             >
-              <span>Follow @helptogetjob</span>
+              <span>Follow {FORM_CONFIG.brand.instagramHandle}</span>
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>

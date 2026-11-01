@@ -10,8 +10,8 @@ export const FORM_CONFIG = {
     name: 'Help to Get Job',
     title: 'helptogetjob',
     tagline: 'Candidate Intake & Career Guidance',
-    instagramUrl: 'https://instagram.com/helptogetjob',
-    instagramHandle: '@helptogetjob',
+    instagramUrl: 'https://www.instagram.com/vaibhav_yogish11748/',
+    instagramHandle: '@vaibhav_yogish11748',
   },
 
   googleForm: {

@@ -425,7 +425,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                   />
                 </div>
                 <p className="text-[11px] text-google-text-secondary mt-1">
-                  Allows direct DM notifications from @helptogetjob.
+                  Allows direct DM notifications from {FORM_CONFIG.brand.instagramHandle}.
                 </p>
               </div>
 
