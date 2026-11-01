@@ -1,6 +1,20 @@
 import React, { useState, useRef } from 'react';
 import { CandidateFormData, FormErrors, FormSubmissionResult } from '../types';
 import { FORM_CONFIG } from '../config/formConfig';
+import { 
+  User, 
+  MapPin, 
+  Briefcase, 
+  FileText, 
+  UploadCloud, 
+  CheckCircle, 
+  AlertCircle, 
+  FileCheck, 
+  X, 
+  ArrowRight,
+  ShieldCheck,
+  Link as LinkIcon
+} from 'lucide-react';
 
 interface ApplicationFormProps {
   onSubmitSuccess: (result: FormSubmissionResult) => void;
@@ -11,10 +25,10 @@ const INITIAL_FORM_DATA: CandidateFormData = {
   email: '',
   instagramId: '',
   state: '',
-  experience: 'Fresher',
+  experience: '',
   yearsOfExperience: '',
-  preferredLocation: 'Banglore',
-  sector: 'IT',
+  preferredLocation: '',
+  sector: '',
   preferredJobRole: '',
   resumeFile: null,
   resumeFileName: '',
@@ -51,7 +65,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
     });
   };
 
-  // Dynamic progress tracker
+  // Google-style progress calculation
   const calculateProgress = () => {
     let filled = 0;
     const requiredChecks = [
@@ -91,42 +105,43 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
     }
   };
 
-  // Resume File Processing
+  // Resume file handling
   const handleResumeFile = (file: File) => {
     setResumeError('');
     const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     const isAllowedExt = /\.(pdf|doc|docx)$/i.test(file.name);
 
     if (!allowed.includes(file.type) && !isAllowedExt) {
-      setResumeError('Please upload a PDF or Word document (.pdf, .doc, .docx).');
+      setResumeError('Please upload a PDF or Microsoft Word (.doc, .docx) file.');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setResumeError('File size exceeds the 10MB limit.');
+      setResumeError('File size exceeds 10MB. Please upload a smaller resume file.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string) || '';
-      setFormData((prev) => ({
-        ...prev,
-        resumeFile: file,
-        resumeFileName: file.name,
-        resumeFileSize: file.size,
-        resumeBase64: base64,
-      }));
-      if (errors.resumeFile) {
-        setErrors((prev) => ({ ...prev, resumeFile: undefined }));
-      }
-    };
-    reader.readAsDataURL(file);
+    setFormData((prev) => ({
+      ...prev,
+      resumeFile: file,
+      resumeFileName: file.name,
+      resumeFileSize: file.size,
+    }));
+
+    if (errors.resumeFile) {
+      setErrors((prev) => ({ ...prev, resumeFile: undefined }));
+    }
   };
 
-  const handleRemoveResume = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (resumeInputRef.current) resumeInputRef.current.value = '';
+  const handleResumeDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsResumeDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleResumeFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleRemoveResume = () => {
     setFormData((prev) => ({
       ...prev,
       resumeFile: null,
@@ -134,55 +149,58 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
       resumeFileSize: 0,
       resumeBase64: '',
     }));
-    setResumeError('');
+    if (resumeInputRef.current) resumeInputRef.current.value = '';
   };
 
-  // Cover Letter File Processing
+  // Cover letter file handling
   const handleCoverLetterFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string) || '';
-      setFormData((prev) => ({
-        ...prev,
-        coverLetterFile: file,
-        coverLetterFileName: file.name,
-        coverLetterBase64: base64,
-      }));
-    };
-    reader.readAsDataURL(file);
+    setFormData((prev) => ({
+      ...prev,
+      coverLetterFile: file,
+      coverLetterFileName: file.name,
+    }));
   };
 
-  const handleRemoveCoverLetter = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (coverLetterInputRef.current) coverLetterInputRef.current.value = '';
+  const handleRemoveCoverLetter = () => {
     setFormData((prev) => ({
       ...prev,
       coverLetterFile: null,
       coverLetterFileName: '',
       coverLetterBase64: '',
     }));
+    if (coverLetterInputRef.current) coverLetterInputRef.current.value = '';
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   const validate = (): boolean => {
     const errs: FormErrors = {};
 
-    if (!formData.fullName.trim()) errs.fullName = 'Please enter your name.';
+    if (!formData.fullName.trim()) errs.fullName = 'Please enter your full name.';
     if (!formData.email.trim()) {
-      errs.email = 'Please enter your email.';
+      errs.email = 'Please enter your email address.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       errs.email = 'Please enter a valid email address.';
     }
-    if (!formData.state.trim()) errs.state = 'Please enter your state.';
-    if (!formData.experience) errs.experience = 'Please select your experience.';
+
+    if (!formData.state.trim()) errs.state = 'Please mention your current state.';
+    if (!formData.experience) errs.experience = 'Please select your experience status.';
     if (formData.experience === 'Experienced' && !formData.yearsOfExperience.trim()) {
-      errs.yearsOfExperience = 'Please mention your years of experience.';
+      errs.yearsOfExperience = 'Please specify your years of experience.';
     }
+
     if (!formData.preferredLocation) errs.preferredLocation = 'Please select your preferred location.';
     if (!formData.sector) errs.sector = 'Please select your sector.';
     if (!formData.preferredJobRole.trim()) errs.preferredJobRole = 'Please enter your preferred job role.';
 
     if (!formData.resumeFile && !formData.resumeCloudLink.trim()) {
-      errs.resumeFile = 'Please upload your updated resume or provide a Google Drive / cloud link.';
+      errs.resumeFile = 'Please upload your updated resume or provide a Google Drive link.';
     }
 
     setErrors(errs);
@@ -208,7 +226,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
     const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
     try {
-      // 1. Process files into Base64 for Google Drive storage
       let resumeBase64 = '';
       if (formData.resumeFile) {
         try {
@@ -231,7 +248,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
 
       let resolvedResumeDriveLink: string | undefined = undefined;
 
-      // 2. Primary Transmission: Google Apps Script Webhook (Direct Drive & Sheet Sync)
+      // Primary: Google Apps Script Webhook
       if (FORM_CONFIG.appsScriptWebhookUrl && FORM_CONFIG.appsScriptWebhookUrl.trim() !== '') {
         try {
           const payload = {
@@ -256,7 +273,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
             },
           };
 
-          // Use text/plain;charset=utf-8 to bypass browser CORS preflight blocks
           const webhookRes = await fetch(FORM_CONFIG.appsScriptWebhookUrl, {
             method: 'POST',
             headers: {
@@ -277,58 +293,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
           console.log('Webhook dispatched to Google Cloud:', webhookErr);
         }
       }
-
-      // 3. Fallback: Silent Google Form submission via hidden iframe (if configured)
-      try {
-        const formEl = document.createElement('form');
-        formEl.action = FORM_CONFIG.googleForm.actionUrl;
-        formEl.method = 'POST';
-        formEl.target = 'hidden_submission_target';
-        formEl.style.display = 'none';
-
-        const entryMap: Record<string, string> = {
-          [FORM_CONFIG.googleForm.entryIds.fullName]: formData.fullName.trim(),
-          [FORM_CONFIG.googleForm.entryIds.email]: formData.email.trim(),
-          [FORM_CONFIG.googleForm.entryIds.instagramId]: formData.instagramId.trim() || 'N/A',
-          [FORM_CONFIG.googleForm.entryIds.state]: formData.state.trim(),
-          [FORM_CONFIG.googleForm.entryIds.experience]: formData.experience,
-          [FORM_CONFIG.googleForm.entryIds.yearsOfExperience]:
-            formData.experience === 'Experienced' ? formData.yearsOfExperience.trim() : '0',
-          [FORM_CONFIG.googleForm.entryIds.preferredLocation]: formData.preferredLocation,
-          [FORM_CONFIG.googleForm.entryIds.sector]: formData.sector,
-          [FORM_CONFIG.googleForm.entryIds.preferredJobRole]: formData.preferredJobRole.trim(),
-          fvv: '1',
-          pageHistory: '0',
-          [`${FORM_CONFIG.googleForm.entryIds.experience}_sentinel`]: '',
-          [`${FORM_CONFIG.googleForm.entryIds.preferredLocation}_sentinel`]: '',
-          [`${FORM_CONFIG.googleForm.entryIds.sector}_sentinel`]: '',
-        };
-
-        if (!FORM_CONFIG.googleForm.entryIds.resume.includes('placeholder')) {
-          entryMap[FORM_CONFIG.googleForm.entryIds.resume] =
-            formData.resumeCloudLink.trim() ||
-            (formData.resumeFile ? `Uploaded Resume: ${formData.resumeFileName}` : 'Pending');
-        }
-        if (!FORM_CONFIG.googleForm.entryIds.coverLetter.includes('placeholder')) {
-          entryMap[FORM_CONFIG.googleForm.entryIds.coverLetter] =
-            formData.coverLetterFileName ? `Uploaded Cover Letter: ${formData.coverLetterFileName}` : (formData.coverLetterText.trim() || 'N/A');
-        }
-
-        Object.entries(entryMap).forEach(([k, v]) => {
-          const inp = document.createElement('input');
-          inp.type = 'hidden';
-          inp.name = k;
-          inp.value = v;
-          formEl.appendChild(inp);
-        });
-
-        document.body.appendChild(formEl);
-        formEl.submit();
-
-        setTimeout(() => {
-          if (document.body.contains(formEl)) document.body.removeChild(formEl);
-        }, 1000);
-      } catch {}
 
       const result: FormSubmissionResult = {
         transmissionId,
@@ -353,390 +317,544 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
       }, 500);
 
     } catch (err) {
-      console.error('Submission failed:', err);
+      console.error('Submission error:', err);
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      {/* Top Progress Tracker */}
-      <div className="bg-dark-card border border-dark-border p-4 rounded-xl mb-6 shadow-sm">
-        <div className="flex items-center justify-between text-xs text-gray-400 mb-1.5 font-medium">
-          <span>Form Completion</span>
-          <span className="text-blue-400 font-semibold">{progress}%</span>
+    <div className="w-full max-w-3xl mx-auto space-y-6">
+      {/* Google-style Progress Card */}
+      <div className="google-card p-4 sm:p-5">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="font-medium text-google-text-secondary">Application Progress</span>
+          <span className="font-semibold text-google-blue">{progress}% Completed</span>
         </div>
-        <div className="w-full h-2 bg-dark-bg rounded-full overflow-hidden">
+        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
           <div
-            className="h-full bg-blue-600 transition-all duration-300 rounded-full"
+            className="bg-google-blue h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-dark-card border border-dark-border rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
-        {/* Form Title */}
-        <div className="border-b border-dark-border pb-4">
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            helptogetjob
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            Fill in your candidate details below. Required fields are marked with <span className="text-red-400">*</span>
-          </p>
-        </div>
-
-        {/* 1. Name: */}
-        <div className="space-y-1.5">
-          <label htmlFor="fullName" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>Name: <span className="text-red-400">*</span></span>
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            name="fullName"
-            required
-            value={formData.fullName}
-            onChange={handleInputChange}
-            placeholder="Your full name"
-            className="form-input-field text-sm"
-          />
-          {errors.fullName && <p className="text-xs text-red-400">{errors.fullName}</p>}
-        </div>
-
-        {/* 2. E-mail */}
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>E-mail <span className="text-red-400">*</span></span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            required
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="your.email@example.com"
-            className="form-input-field text-sm"
-          />
-          {errors.email && <p className="text-xs text-red-400">{errors.email}</p>}
-        </div>
-
-        {/* 3. insta ID */}
-        <div className="space-y-1.5">
-          <label htmlFor="instagramId" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>insta ID</span>
-            <span className="text-xs text-gray-500">(Optional)</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
-            <input
-              id="instagramId"
-              type="text"
-              name="instagramId"
-              value={formData.instagramId}
-              onChange={handleInputChange}
-              placeholder="username"
-              className="form-input-field text-sm pl-8"
-            />
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        {/* ============================================================ */}
+        {/* SECTION 1: CONTACT INFORMATION */}
+        {/* ============================================================ */}
+        <div className="google-card p-6 sm:p-8">
+          <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-google-border/70">
+            <div className="w-8 h-8 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
+              <User className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-google-text-primary">
+                1. Contact Information
+              </h2>
+              <p className="text-xs text-google-text-secondary">
+                Please provide accurate contact details so recruiters and mentors can reach you.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* 4. State */}
-        <div className="space-y-1.5">
-          <label htmlFor="state" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>State <span className="text-red-400">*</span></span>
-          </label>
-          <input
-            id="state"
-            type="text"
-            name="state"
-            required
-            value={formData.state}
-            onChange={handleInputChange}
-            placeholder="e.g. Karnataka, Maharashtra, Delhi..."
-            className="form-input-field text-sm"
-          />
-          {errors.state && <p className="text-xs text-red-400">{errors.state}</p>}
-        </div>
-
-        {/* 5. Experience */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-200 block">
-            Experience <span className="text-red-400">*</span>
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            {EXPERIENCE_OPTIONS.map((exp) => (
-              <label
-                key={exp}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  formData.experience === exp
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-medium'
-                    : 'border-dark-border bg-dark-bg/60 text-gray-300 hover:border-gray-500'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="experience"
-                  value={exp}
-                  checked={formData.experience === exp}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-blue-600 bg-dark-input border-dark-border focus:ring-0"
-                />
-                <span className="text-sm">{exp}</span>
+          <div className="space-y-5">
+            {/* 1. Name */}
+            <div>
+              <label htmlFor="fullName" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Full Name <span className="text-google-red">*</span>
               </label>
-            ))}
-          </div>
-          {errors.experience && <p className="text-xs text-red-400">{errors.experience}</p>}
-        </div>
-
-        {/* 6. If Experienced Mention the Years of experience */}
-        {formData.experience === 'Experienced' && (
-          <div className="space-y-1.5 bg-dark-bg/50 p-4 rounded-lg border border-dark-border animate-fadeIn">
-            <label htmlFor="yearsOfExperience" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-              <span>If Experienced Mention the Years of experience <span className="text-red-400">*</span></span>
-            </label>
-            <input
-              id="yearsOfExperience"
-              type="text"
-              name="yearsOfExperience"
-              required={formData.experience === 'Experienced'}
-              value={formData.yearsOfExperience}
-              onChange={handleInputChange}
-              placeholder="e.g. 2.5 Years"
-              className="form-input-field text-sm"
-            />
-            {errors.yearsOfExperience && (
-              <p className="text-xs text-red-400">{errors.yearsOfExperience}</p>
-            )}
-          </div>
-        )}
-
-        {/* 7. Preffered Location */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-200 block">
-            Preffered Location <span className="text-red-400">*</span>
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {LOCATION_OPTIONS.map((loc) => (
-              <label
-                key={loc}
-                className={`flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  formData.preferredLocation === loc
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-medium'
-                    : 'border-dark-border bg-dark-bg/60 text-gray-300 hover:border-gray-500'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="preferredLocation"
-                  value={loc}
-                  checked={formData.preferredLocation === loc}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-blue-600 bg-dark-input border-dark-border focus:ring-0"
-                />
-                <span className="text-sm">{loc}</span>
-              </label>
-            ))}
-          </div>
-          {errors.preferredLocation && <p className="text-xs text-red-400">{errors.preferredLocation}</p>}
-        </div>
-
-        {/* 8. Sector */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-200 block">
-            Sector <span className="text-red-400">*</span>
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            {SECTOR_OPTIONS.map((sec) => (
-              <label
-                key={sec}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  formData.sector === sec
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-medium'
-                    : 'border-dark-border bg-dark-bg/60 text-gray-300 hover:border-gray-500'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="sector"
-                  value={sec}
-                  checked={formData.sector === sec}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-blue-600 bg-dark-input border-dark-border focus:ring-0"
-                />
-                <span className="text-sm">{sec}</span>
-              </label>
-            ))}
-          </div>
-          {errors.sector && <p className="text-xs text-red-400">{errors.sector}</p>}
-        </div>
-
-        {/* 9. Preffered Job Role */}
-        <div className="space-y-1.5">
-          <label htmlFor="preferredJobRole" className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>Preffered Job Role <span className="text-red-400">*</span></span>
-          </label>
-          <input
-            id="preferredJobRole"
-            type="text"
-            name="preferredJobRole"
-            required
-            value={formData.preferredJobRole}
-            onChange={handleInputChange}
-            placeholder="e.g. Software Engineer, QA Tester, Data Analyst..."
-            className="form-input-field text-sm"
-          />
-          {errors.preferredJobRole && (
-            <p className="text-xs text-red-400">{errors.preferredJobRole}</p>
-          )}
-        </div>
-
-        {/* 10. Updated Resume */}
-        <div className="space-y-2 pt-2 border-t border-dark-border">
-          <label className="text-sm font-medium text-gray-200 block">
-            Updated Resume <span className="text-red-400">*</span>
-          </label>
-
-          <input
-            ref={resumeInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleResumeFile(e.target.files[0]);
-              }
-            }}
-          />
-
-          <div
-            onClick={() => resumeInputRef.current?.click()}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsResumeDragging(false);
-              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleResumeFile(e.dataTransfer.files[0]);
-              }
-            }}
-            onDragOver={(e) => { e.preventDefault(); setIsResumeDragging(true); }}
-            onDragLeave={() => setIsResumeDragging(false)}
-            className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
-              isResumeDragging
-                ? 'border-blue-500 bg-blue-500/10'
-                : formData.resumeFile
-                ? 'border-green-500/50 bg-green-500/5'
-                : 'border-dark-border hover:border-gray-500 bg-dark-bg/60'
-            }`}
-          >
-            {!formData.resumeFile ? (
-              <div className="space-y-1.5">
-                <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-white">Click to upload Updated Resume</p>
-                <p className="text-xs text-gray-400">PDF or Document (max 10MB)</p>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between text-left">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded bg-green-500/10 text-green-400 flex items-center justify-center">
-                    ✓
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-white break-all">{formData.resumeFileName}</p>
-                    <p className="text-[11px] text-gray-400">{(formData.resumeFileSize / (1024 * 1024)).toFixed(2)} MB • Ready</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveResume}
-                  className="text-xs text-red-400 hover:text-red-300 font-medium px-2 py-1 rounded"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-          {resumeError && <p className="text-xs text-red-400">{resumeError}</p>}
-
-          {/* Alternative Google Drive Link */}
-          <div className="pt-1">
-            <span className="text-[11px] text-gray-500 block mb-1">Or paste a Google Drive / cloud link:</span>
-            <input
-              type="url"
-              name="resumeCloudLink"
-              value={formData.resumeCloudLink}
-              onChange={handleInputChange}
-              placeholder="https://drive.google.com/file/d/.../view"
-              className="form-input-field text-xs"
-            />
-          </div>
-          {errors.resumeFile && <p className="text-xs text-red-400 mt-1">{errors.resumeFile}</p>}
-        </div>
-
-        {/* 11. Cover letter */}
-        <div className="space-y-2 pt-2 border-t border-dark-border">
-          <label className="text-sm font-medium text-gray-200 flex items-center justify-between">
-            <span>Cover letter</span>
-            <span className="text-xs text-gray-500">(Optional)</span>
-          </label>
-
-          <input
-            ref={coverLetterInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.txt"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleCoverLetterFile(e.target.files[0]);
-              }
-            }}
-          />
-
-          {!formData.coverLetterFile ? (
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => coverLetterInputRef.current?.click()}
-                className="w-full text-xs text-gray-400 hover:text-white bg-dark-bg hover:bg-dark-hover border border-dark-border p-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
-              >
-                <span>📎 Upload Cover Letter file (PDF / DOC / TXT)</span>
-              </button>
-
-              <textarea
-                name="coverLetterText"
-                rows={2}
-                value={formData.coverLetterText}
+              <input
+                id="fullName"
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
                 onChange={handleInputChange}
-                placeholder="Or type a brief note/cover letter here..."
-                className="form-input-field text-xs leading-relaxed resize-none"
+                placeholder="e.g. Rahul Sharma"
+                className={`google-input ${errors.fullName ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
               />
+              {errors.fullName && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.fullName}
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center justify-between p-3 rounded-lg border border-dark-border bg-dark-bg text-left">
-              <div className="flex items-center gap-2">
-                <span className="text-blue-400 text-xs">📄</span>
-                <span className="text-xs text-white break-all">{formData.coverLetterFileName}</span>
+
+            {/* 2. E-mail */}
+            <div>
+              <label htmlFor="email" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Email Address <span className="text-google-red">*</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="e.g. rahul.sharma@example.com"
+                className={`google-input ${errors.email ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
+              />
+              {errors.email && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* 3. insta ID & 4. State Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="instagramId" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                  Instagram Handle <span className="text-google-text-tertiary font-normal">(Optional)</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-google-text-tertiary font-medium">
+                    @
+                  </span>
+                  <input
+                    id="instagramId"
+                    type="text"
+                    name="instagramId"
+                    value={formData.instagramId}
+                    onChange={handleInputChange}
+                    placeholder="your_handle"
+                    className="google-input pl-7"
+                  />
+                </div>
+                <p className="text-[11px] text-google-text-secondary mt-1">
+                  Allows direct DM notifications from @helptogetjob.
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={handleRemoveCoverLetter}
-                className="text-xs text-red-400 hover:text-red-300 font-medium"
-              >
-                Remove
-              </button>
+
+              <div>
+                <label htmlFor="state" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                  Current State <span className="text-google-red">*</span>
+                </label>
+                <input
+                  id="state"
+                  type="text"
+                  name="state"
+                  required
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Karnataka, Maharashtra, Delhi"
+                  className={`google-input ${errors.state ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
+                />
+                {errors.state && (
+                  <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.state}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="pt-4 border-t border-dark-border">
+        {/* ============================================================ */}
+        {/* SECTION 2: EXPERIENCE & BACKGROUND */}
+        {/* ============================================================ */}
+        <div className="google-card p-6 sm:p-8">
+          <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-google-border/70">
+            <div className="w-8 h-8 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
+              <Briefcase className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-google-text-primary">
+                2. Experience & Background
+              </h2>
+              <p className="text-xs text-google-text-secondary">
+                Select your current career stage to help us match appropriate openings.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {/* 5. Experience Radio Tiles */}
+            <div>
+              <label className="block text-xs font-semibold text-google-text-primary mb-2">
+                Experience Level <span className="text-google-red">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {EXPERIENCE_OPTIONS.map((exp) => {
+                  const isSelected = formData.experience === exp;
+                  return (
+                    <label
+                      key={exp}
+                      className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-google-blue bg-google-blue-bg/40 text-google-text-primary font-medium shadow-sm'
+                          : 'border-google-border bg-white text-google-text-secondary hover:border-google-border-hover'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="experience"
+                        value={exp}
+                        checked={isSelected}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-google-blue border-google-border focus:ring-google-blue"
+                      />
+                      <span className="text-sm">{exp}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {errors.experience && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.experience}
+                </p>
+              )}
+            </div>
+
+            {/* 6. If Experienced Mention the Years of experience */}
+            {formData.experience === 'Experienced' && (
+              <div className="p-4 bg-gray-50 border border-google-border rounded-lg animate-fadeIn">
+                <label htmlFor="yearsOfExperience" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                  Years of Experience <span className="text-google-red">*</span>
+                </label>
+                <input
+                  id="yearsOfExperience"
+                  type="text"
+                  name="yearsOfExperience"
+                  required
+                  value={formData.yearsOfExperience}
+                  onChange={handleInputChange}
+                  placeholder="e.g. 2.5 Years, 4 Years"
+                  className={`google-input ${errors.yearsOfExperience ? 'border-google-red' : ''}`}
+                />
+                {errors.yearsOfExperience && (
+                  <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.yearsOfExperience}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* SECTION 3: JOB PREFERENCES */}
+        {/* ============================================================ */}
+        <div className="google-card p-6 sm:p-8">
+          <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-google-border/70">
+            <div className="w-8 h-8 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-google-text-primary">
+                3. Job Preferences
+              </h2>
+              <p className="text-xs text-google-text-secondary">
+                Tell us where you want to work and what roles you are targeting.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {/* 7. Preffered Location */}
+            <div>
+              <label className="block text-xs font-semibold text-google-text-primary mb-2">
+                Preferred Location <span className="text-google-red">*</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {LOCATION_OPTIONS.map((loc) => {
+                  const isSelected = formData.preferredLocation === loc;
+                  return (
+                    <label
+                      key={loc}
+                      className={`flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-google-blue bg-google-blue-bg/40 text-google-text-primary font-medium shadow-sm'
+                          : 'border-google-border bg-white text-google-text-secondary hover:border-google-border-hover'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="preferredLocation"
+                        value={loc}
+                        checked={isSelected}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-google-blue border-google-border focus:ring-google-blue"
+                      />
+                      <span className="text-sm">{loc}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {errors.preferredLocation && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.preferredLocation}
+                </p>
+              )}
+            </div>
+
+            {/* 8. Sector */}
+            <div>
+              <label className="block text-xs font-semibold text-google-text-primary mb-2">
+                Industry Sector <span className="text-google-red">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {SECTOR_OPTIONS.map((sec) => {
+                  const isSelected = formData.sector === sec;
+                  return (
+                    <label
+                      key={sec}
+                      className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-google-blue bg-google-blue-bg/40 text-google-text-primary font-medium shadow-sm'
+                          : 'border-google-border bg-white text-google-text-secondary hover:border-google-border-hover'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="sector"
+                        value={sec}
+                        checked={isSelected}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-google-blue border-google-border focus:ring-google-blue"
+                      />
+                      <span className="text-sm font-medium">{sec}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {errors.sector && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.sector}
+                </p>
+              )}
+            </div>
+
+            {/* 9. Preffered Job Role */}
+            <div>
+              <label htmlFor="preferredJobRole" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Preferred Job Role <span className="text-google-red">*</span>
+              </label>
+              <input
+                id="preferredJobRole"
+                type="text"
+                name="preferredJobRole"
+                required
+                value={formData.preferredJobRole}
+                onChange={handleInputChange}
+                placeholder="e.g. Frontend Developer, QA Engineer, Business Analyst, HR"
+                className={`google-input ${errors.preferredJobRole ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
+              />
+              {errors.preferredJobRole && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.preferredJobRole}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* SECTION 4: RESUME & DOCUMENTS */}
+        {/* ============================================================ */}
+        <div className="google-card p-6 sm:p-8">
+          <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-google-border/70">
+            <div className="w-8 h-8 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-google-text-primary">
+                4. Resume & Documents
+              </h2>
+              <p className="text-xs text-google-text-secondary">
+                Upload your updated resume. Files are saved securely in our Google Drive.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* 10. Updated Resume */}
+            <div>
+              <label className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Updated Resume <span className="text-google-red">*</span>
+              </label>
+
+              <input
+                ref={resumeInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleResumeFile(e.target.files[0]);
+                  }
+                }}
+              />
+
+              {!formData.resumeFile ? (
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsResumeDragging(true);
+                  }}
+                  onDragLeave={() => setIsResumeDragging(false)}
+                  onDrop={handleResumeDrop}
+                  onClick={() => resumeInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                    isResumeDragging
+                      ? 'border-google-blue bg-google-blue-bg/50'
+                      : 'border-google-border hover:border-google-blue bg-google-gray-bg/60 hover:bg-google-blue-bg/20'
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center mx-auto mb-3">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-medium text-google-text-primary">
+                    <span className="text-google-blue font-semibold hover:underline">Click to browse</span> or drag and drop your resume
+                  </p>
+                  <p className="text-xs text-google-text-secondary mt-1">
+                    Supported formats: PDF, DOCX, DOC (Up to 10MB)
+                  </p>
+                </div>
+              ) : (
+                /* Google Document Chip */
+                <div className="border border-google-border bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
+                      <FileCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-google-text-primary break-all">
+                        {formData.resumeFileName}
+                      </p>
+                      <p className="text-xs text-google-text-secondary flex items-center gap-2 mt-0.5">
+                        <span>{formatFileSize(formData.resumeFileSize)}</span>
+                        <span>•</span>
+                        <span className="text-google-green flex items-center gap-1 font-medium">
+                          <CheckCircle className="w-3 h-3" /> Ready to upload to Drive
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveResume}
+                    className="p-1.5 rounded-lg text-google-text-tertiary hover:text-google-red hover:bg-google-red-bg transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {resumeError && (
+                <p className="text-xs text-google-red mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {resumeError}
+                </p>
+              )}
+              {errors.resumeFile && (
+                <p className="text-xs text-google-red mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.resumeFile}
+                </p>
+              )}
+
+              {/* Alternative Cloud Link Option */}
+              <div className="mt-3">
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-google-text-tertiary">
+                    <LinkIcon className="w-3.5 h-3.5" />
+                  </span>
+                  <input
+                    type="url"
+                    name="resumeCloudLink"
+                    value={formData.resumeCloudLink}
+                    onChange={handleInputChange}
+                    placeholder="Or paste Google Drive / Dropbox shareable link..."
+                    className="google-input pl-9 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 11. Cover letter */}
+            <div>
+              <label className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Cover Letter <span className="text-google-text-tertiary font-normal">(Optional)</span>
+              </label>
+
+              <input
+                ref={coverLetterInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleCoverLetterFile(e.target.files[0]);
+                  }
+                }}
+              />
+
+              {!formData.coverLetterFile ? (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => coverLetterInputRef.current?.click()}
+                    className="w-full text-xs text-google-text-secondary hover:text-google-blue bg-google-gray-bg hover:bg-google-blue-bg/30 border border-google-border p-3 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
+                  >
+                    <span>📎 Upload Cover Letter file (PDF / DOC / TXT)</span>
+                  </button>
+
+                  <textarea
+                    name="coverLetterText"
+                    rows={3}
+                    value={formData.coverLetterText}
+                    onChange={handleInputChange}
+                    placeholder="Or write a brief note to hiring mentors..."
+                    className="google-input text-xs leading-relaxed resize-none"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3.5 rounded-lg border border-google-border bg-white shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-4 h-4 text-google-blue" />
+                    <span className="text-xs font-medium text-google-text-primary break-all">
+                      {formData.coverLetterFileName}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoverLetter}
+                    className="text-xs text-google-red hover:underline font-medium"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* SUBMIT SECTION */}
+        {/* ============================================================ */}
+        <div className="google-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 text-xs text-google-text-secondary text-center sm:text-left">
+            <ShieldCheck className="w-4 h-4 text-google-green shrink-0" />
+            <span>
+              Your data is encrypted and saved directly into Google Drive and Google Sheets.
+            </span>
+          </div>
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-primary w-full py-3.5 shadow-md shadow-blue-600/20 text-sm font-semibold cursor-pointer disabled:opacity-50"
+            className="btn-google-primary w-full sm:w-auto px-8 py-3 text-sm font-semibold shrink-0"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -747,7 +865,10 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                 <span>{submitStatusMessage}</span>
               </span>
             ) : (
-              'Submit Application'
+              <span className="flex items-center gap-2">
+                <span>Submit Application</span>
+                <ArrowRight className="w-4 h-4" />
+              </span>
             )}
           </button>
         </div>

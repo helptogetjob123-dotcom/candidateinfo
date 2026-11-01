@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
-import { EmbeddedFormCard } from './components/EmbeddedFormCard';
 import { ApplicationForm } from './components/ApplicationForm';
 import { ConfirmationScreen } from './components/ConfirmationScreen';
 import { ProcessRoadmap } from './components/ProcessRoadmap';
 import { FAQSection } from './components/FAQSection';
 import { FormSubmissionResult } from './types';
 import { FORM_CONFIG } from './config/formConfig';
-import { Instagram, Shield, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
+import { Instagram, Shield, CheckCircle, ArrowRight, MapPin, Briefcase } from 'lucide-react';
 
 export const App: React.FC = () => {
-  // 'native' is default for the 100% custom website form with direct Drive & Sheet integration
-  const [formMode, setFormMode] = useState<'embedded' | 'native'>('native');
   const [submissionResult, setSubmissionResult] = useState<FormSubmissionResult | null>(null);
 
   const handleReset = () => {
@@ -20,132 +17,77 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-gray-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-google-gray-bg text-google-text-primary flex flex-col font-sans selection:bg-google-blue-bg selection:text-google-blue">
       {/* Top Navbar */}
       <Navbar />
 
-      {/* Hero Section */}
-      <header className="relative pt-10 pb-8 px-4 sm:px-6 lg:px-8 border-b border-dark-border/60 bg-gradient-to-b from-[#0F1626] to-dark-bg">
-        <div className="max-w-4xl mx-auto text-center space-y-4">
+      {/* Hero Header (Google Careers Style) */}
+      <header className="pt-10 pb-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-google-border">
+        <div className="max-w-3xl mx-auto text-center space-y-3.5">
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>INTAKE ACTIVE // 2024-2025 BATCH</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-google-green-bg text-google-green border border-google-green/20">
+            <span className="w-2 h-2 rounded-full bg-google-green" />
+            <span>Applications Open — 2025 Hiring Season</span>
           </div>
 
           {/* Main Title */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
-            Help to Get Job{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-              Intake Portal
-            </span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-google-text-primary">
+            Candidate Intake & Job Application
           </h1>
 
           {/* Subtitle */}
-          <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Submit your candidate profile and updated resume. Our mentorship team and partner recruiters review every application to match you with active IT and Non-IT openings.
+          <p className="text-sm text-google-text-secondary max-w-xl mx-auto leading-relaxed">
+            Submit your profile and resume below. Our mentorship team reviews all submissions to match candidates with active IT and Non-IT openings.
           </p>
 
-          {/* Quick Stats / Highlights */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-medium text-gray-300">
-            <span className="inline-flex items-center gap-1.5 bg-dark-card/90 border border-dark-border px-3 py-1.5 rounded-lg">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-              IT & Non-IT Roles
+          {/* Google Job Metadata Tags */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-google-text-secondary">
+            <span className="inline-flex items-center gap-1 bg-google-gray-bg border border-google-border px-3 py-1.5 rounded-full">
+              <MapPin className="w-3.5 h-3.5 text-google-blue" />
+              Pune • Bangalore • Mangalore • Mumbai • Remote
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-dark-card/90 border border-dark-border px-3 py-1.5 rounded-lg">
-              <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
+            <span className="inline-flex items-center gap-1 bg-google-gray-bg border border-google-border px-3 py-1.5 rounded-full">
+              <Briefcase className="w-3.5 h-3.5 text-purple-600" />
               Freshers & Experienced
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-dark-card/90 border border-dark-border px-3 py-1.5 rounded-lg">
-              <CheckCircle className="w-3.5 h-3.5 text-purple-400" />
-              Pune • Bangalore • Mumbai • Mangalore
+            <span className="inline-flex items-center gap-1 bg-google-gray-bg border border-google-border px-3 py-1.5 rounded-full">
+              <CheckCircle className="w-3.5 h-3.5 text-google-green" />
+              IT & Non-IT Roles
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-dark-card/90 border border-dark-border px-3 py-1.5 rounded-lg">
-              <Shield className="w-3.5 h-3.5 text-amber-400" />
-              100% Free Referral Support
+            <span className="inline-flex items-center gap-1 bg-google-gray-bg border border-google-border px-3 py-1.5 rounded-full">
+              <Shield className="w-3.5 h-3.5 text-amber-500" />
+              100% Free Career Support
             </span>
-          </div>
-
-          {/* View Mode Switcher Pills */}
-          <div className="pt-4 flex items-center justify-center">
-            <div className="inline-flex p-1 bg-dark-card border border-dark-border rounded-xl shadow-inner">
-              <button
-                type="button"
-                onClick={() => setFormMode('embedded')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  formMode === 'embedded'
-                    ? 'bg-brand-blue text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                <span>📄 Official Google Form</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFormMode('native')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  formMode === 'native'
-                    ? 'bg-brand-blue text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                <span>🌙 100% Dark Theme (Custom Form)</span>
-              </button>
-            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {formMode === 'embedded' ? (
-          /* EMBEDDED FORM VIEW (100% Reliable & Direct Drive Uploads) */
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        {!submissionResult ? (
           <div>
-            <EmbeddedFormCard
-              embedUrl="https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/viewform?embedded=true"
-              directUrl="https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/viewform"
-            />
+            <ApplicationForm onSubmitSuccess={setSubmissionResult} />
           </div>
         ) : (
-          /* NATIVE CUSTOM FORM VIEW */
-          <div className="max-w-2xl mx-auto">
-            {!submissionResult ? (
-              <div>
-                {!FORM_CONFIG.appsScriptWebhookUrl && (
-                  <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 flex items-center justify-between gap-3 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shrink-0" />
-                      <span>
-                        <strong>Backend Ready:</strong> Deploy the script in <code className="bg-dark-bg px-1.5 py-0.5 rounded text-white">google-apps-script/Code.gs</code> to your Google Sheet to connect your Drive folder.
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <ApplicationForm onSubmitSuccess={setSubmissionResult} />
-              </div>
-            ) : (
-              <ConfirmationScreen result={submissionResult} onReset={handleReset} />
-            )}
-          </div>
+          <ConfirmationScreen result={submissionResult} onReset={handleReset} />
         )}
 
         {/* Workflow Roadmap / What happens next */}
         <ProcessRoadmap />
 
-        {/* Official Instagram Community CTA Banner */}
-        <section className="w-full max-w-3xl mx-auto mt-14 sm:mt-16">
-          <div className="bg-gradient-to-r from-[#181C2E] via-[#1E1B38] to-[#2B1B2D] border border-purple-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-            <div className="space-y-2 text-center sm:text-left z-10">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">
+        {/* Official Instagram Community Banner */}
+        <section className="w-full max-w-3xl mx-auto mt-12 sm:mt-16">
+          <div className="bg-white border border-google-border rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-google-card">
+            <div className="space-y-1.5 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-600 bg-pink-50 border border-pink-200 px-2.5 py-0.5 rounded-full">
                 <Instagram className="w-3.5 h-3.5" />
                 <span>Official Instagram Community</span>
               </div>
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-lg font-bold text-google-text-primary">
                 Join 10,000+ Job Seekers on Instagram
               </h3>
-              <p className="text-xs sm:text-sm text-gray-300 max-w-md">
-                Follow <strong className="text-white">@helptogetjob</strong> for instant walk-in drive alerts, ATS resume templates, interview mock questions, and direct recruiter Q&As.
+              <p className="text-xs text-google-text-secondary max-w-md leading-relaxed">
+                Follow <strong className="text-google-text-primary">@helptogetjob</strong> for daily walk-in alerts, ATS resume templates, and direct recruiter Q&As.
               </p>
             </div>
 
@@ -153,14 +95,11 @@ export const App: React.FC = () => {
               href={FORM_CONFIG.brand.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm px-5 py-3 rounded-xl transition-all shadow-lg hover:shadow-pink-500/20 shrink-0 z-10"
+              className="btn-google-primary text-xs sm:text-sm px-5 py-2.5 flex items-center gap-2 shrink-0"
             >
               <span>Follow @helptogetjob</span>
               <ArrowRight className="w-4 h-4" />
             </a>
-
-            {/* Subtle background glow */}
-            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
           </div>
         </section>
 
@@ -168,16 +107,16 @@ export const App: React.FC = () => {
         <FAQSection />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-dark-border py-8 px-4 sm:px-6 lg:px-8 bg-[#070A10] text-xs text-gray-500 mt-16">
+      {/* Google-style Footer */}
+      <footer className="border-t border-google-border py-8 px-4 sm:px-6 lg:px-8 bg-white text-xs text-google-text-secondary mt-16">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-brand-blue flex items-center justify-center font-bold text-white text-xs">
+            <div className="w-7 h-7 rounded bg-google-blue flex items-center justify-center font-bold text-white text-xs shadow-sm">
               H
             </div>
             <div>
-              <p className="font-semibold text-gray-300">{FORM_CONFIG.brand.name}</p>
-              <p className="text-[11px] text-gray-500">Candidate Intake & Career Guidance Network</p>
+              <p className="font-semibold text-google-text-primary">{FORM_CONFIG.brand.name}</p>
+              <p className="text-[11px] text-google-text-tertiary">Candidate Intake & Career Guidance Network</p>
             </div>
           </div>
 
@@ -186,28 +125,22 @@ export const App: React.FC = () => {
               href={FORM_CONFIG.brand.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+              className="text-google-text-secondary hover:text-google-blue transition-colors flex items-center gap-1.5"
             >
-              <Instagram className="w-3.5 h-3.5 text-pink-500" />
+              <Instagram className="w-3.5 h-3.5 text-pink-600" />
               <span>{FORM_CONFIG.brand.instagramHandle}</span>
             </a>
 
-            <span className="text-dark-border">|</span>
+            <span className="text-google-border">|</span>
 
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSeEeII2_coWgjDZDQyCi1ciK8Gjw5yTSGNH49bDmWTEttVOaA/viewform"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors flex items-center gap-1"
-            >
-              <span>Direct Google Form</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <span className="text-google-green font-medium">
+              100% Free Career Support
+            </span>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto mt-4 pt-4 border-t border-dark-border/40 text-center text-[11px] text-gray-600">
-          © {new Date().getFullYear()} {FORM_CONFIG.brand.name}. All rights reserved. Zero placement fees guaranteed.
+        <div className="max-w-4xl mx-auto mt-4 pt-4 border-t border-google-border/40 text-center text-[11px] text-google-text-tertiary">
+          © {new Date().getFullYear()} {FORM_CONFIG.brand.name}. All rights reserved. Zero placement or registration fees guaranteed.
         </div>
       </footer>
     </div>

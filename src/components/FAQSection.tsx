@@ -11,16 +11,16 @@ export const FAQSection: React.FC = () => {
 
   const faqs: FAQItem[] = [
     {
-      q: 'Why does Google ask me to sign in when filling the form?',
-      a: 'Because this form accepts direct file uploads for your Updated Resume and Cover Letter. Google requires a Google account to securely verify and upload your files directly into Google Drive without third-party exposure.',
+      q: 'Where will my uploaded resume and data be saved?',
+      a: 'Your resume is uploaded securely into our dedicated Google Drive folder, and your profile details are recorded into our recruitment Google Sheet. Only verified mentorship and recruitment partners have viewing access.',
     },
     {
-      q: 'Is there any registration fee or charges?',
-      a: 'No. Help to Get Job is 100% free. We never charge candidates for resume screening, interview tips, guidance, or direct recruiter referrals.',
+      q: 'Is there any registration fee or charge?',
+      a: 'No, Help to Get Job is 100% free for all candidates. We never charge for resume screening, career guidance, interview preparation, or direct recruiter referrals.',
     },
     {
       q: 'Can freshers apply, or is this only for experienced candidates?',
-      a: 'Both freshers and experienced candidates can apply! The form includes an Experience selector (Fresher vs Experienced) and years of experience so we can route your profile to the right hiring managers.',
+      a: 'Both freshers and experienced candidates can apply! The form includes an Experience Level selector (Fresher vs Experienced) and years of experience so we can route your profile to the right hiring drives.',
     },
     {
       q: 'Which job locations are covered?',
@@ -30,10 +30,6 @@ export const FAQSection: React.FC = () => {
       q: 'How long until I hear back?',
       a: 'Our review team screens submissions continuously. Shortlisted candidates are contacted directly via Email or Instagram DM within 24 to 72 hours depending on matching hiring drives.',
     },
-    {
-      q: 'What if the form fails to load on my phone or browser?',
-      a: 'If you have third-party cookies disabled or encounter an iframe block, simply click the blue "Open in New Tab" button right above the form to fill it directly on Google Forms.',
-    },
   ];
 
   const toggle = (index: number) => {
@@ -41,16 +37,16 @@ export const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="w-full max-w-3xl mx-auto mt-14 sm:mt-20">
+    <section className="w-full max-w-3xl mx-auto mt-12 sm:mt-16">
       <div className="text-center mb-8">
-        <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full">
-          Candidate FAQs
+        <span className="text-[11px] font-medium tracking-wide uppercase text-google-blue bg-google-blue-bg border border-google-blue-border/60 px-3 py-1 rounded-full">
+          Support & FAQs
         </span>
-        <h3 className="text-xl sm:text-2xl font-bold text-white mt-2">
+        <h3 className="text-xl sm:text-2xl font-bold text-google-text-primary mt-2">
           Frequently Asked Questions
         </h3>
-        <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-md mx-auto">
-          Common queries about our submission process and career guidance.
+        <p className="text-xs sm:text-sm text-google-text-secondary mt-1 max-w-md mx-auto">
+          Common queries about our candidate submission and referral process.
         </p>
       </div>
 
@@ -60,27 +56,27 @@ export const FAQSection: React.FC = () => {
           return (
             <div
               key={idx}
-              className="bg-dark-card border border-dark-border rounded-xl overflow-hidden transition-colors"
+              className="google-card overflow-hidden transition-colors"
             >
               <button
                 onClick={() => toggle(idx)}
-                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-dark-hover/50 transition-colors"
+                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <HelpCircle className="w-4 h-4 text-blue-400 shrink-0" />
-                  <span className="text-sm font-semibold text-gray-200">
+                  <HelpCircle className="w-4 h-4 text-google-blue shrink-0" />
+                  <span className="text-sm font-medium text-google-text-primary">
                     {faq.q}
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                    isOpen ? 'rotate-180 text-blue-400' : ''
+                  className={`w-4 h-4 text-google-text-tertiary transition-transform duration-200 shrink-0 ${
+                    isOpen ? 'rotate-180 text-google-blue' : ''
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-gray-400 border-t border-dark-border/40 leading-relaxed bg-[#0c1220]/40">
+                <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-google-text-secondary border-t border-google-border/40 leading-relaxed bg-google-gray-bg/50">
                   {faq.a}
                 </div>
               )}

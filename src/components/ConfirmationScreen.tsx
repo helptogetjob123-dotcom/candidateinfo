@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormSubmissionResult } from '../types';
 import { FORM_CONFIG } from '../config/formConfig';
+import { Check, Instagram, ExternalLink, ArrowRight, RotateCcw } from 'lucide-react';
 
 interface ConfirmationScreenProps {
   result: FormSubmissionResult;
@@ -12,109 +13,131 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
   onReset,
 }) => {
   return (
-    <div className="w-full max-w-lg mx-auto py-8 text-center animate-fadeIn">
-      <div className="bg-dark-card border border-dark-border rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
-        {/* Success Icon */}
-        <div className="w-14 h-14 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mx-auto border border-green-500/20">
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-          </svg>
+    <div className="w-full max-w-2xl mx-auto py-6 animate-fadeIn">
+      <div className="google-card p-6 sm:p-10 text-center space-y-6">
+        {/* Google Check Icon */}
+        <div className="w-16 h-16 bg-google-green-bg text-google-green rounded-full flex items-center justify-center mx-auto border border-google-green/20 shadow-sm">
+          <Check className="w-8 h-8 stroke-[2.5]" />
         </div>
 
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            helptogetjob
+          <span className="inline-block text-[11px] font-mono font-medium text-google-blue bg-google-blue-bg border border-google-blue-border/60 px-3 py-1 rounded-full mb-2">
+            APPLICATION RECEIVED
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-google-text-primary tracking-tight">
+            Application Submitted
           </h1>
-          <p className="text-gray-400 text-sm mt-1.5">
-            Your application response has been recorded successfully.
+          <p className="text-google-text-secondary text-sm mt-2 max-w-md mx-auto leading-relaxed">
+            Thank you for applying! Your dossier has been securely recorded into our recruiter database and Google Drive.
           </p>
         </div>
 
-        {/* Candidate Submitted Details Summary */}
-        <div className="bg-dark-bg border border-dark-border rounded-lg p-4 text-left space-y-2.5 text-xs">
-          <div className="flex items-center justify-between border-b border-dark-border pb-2">
-            <span className="text-gray-400 font-medium">Reference ID</span>
-            <span className="font-mono text-blue-400 font-semibold">{result.transmissionId}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Name:</span>
-            <span className="text-white font-medium">{result.fullName}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">E-mail:</span>
-            <span className="text-white font-medium">{result.email}</span>
-          </div>
-          {result.instagramId && (
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 font-medium">insta ID:</span>
-              <span className="text-pink-400 font-medium">@{result.instagramId}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">State:</span>
-            <span className="text-white font-medium">{result.state}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Experience:</span>
-            <span className="text-white font-medium">
-              {result.experience} {result.yearsOfExperience ? `(${result.yearsOfExperience})` : ''}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Preffered Location:</span>
-            <span className="text-white font-medium">{result.preferredLocation}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Sector:</span>
-            <span className="text-white font-medium">{result.sector}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Preffered Job Role:</span>
-            <span className="text-blue-300 font-medium">{result.preferredJobRole}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">Updated Resume:</span>
-            <div className="flex items-center gap-2">
-              <span className="text-green-400 font-medium">{result.resumeName}</span>
-              {result.resumeDriveLink && result.resumeDriveLink.startsWith('http') && (
-                <a
-                  href={result.resumeDriveLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[11px] text-blue-400 hover:underline flex items-center gap-0.5 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20"
-                >
-                  <span>Drive</span>
-                  <span>↗</span>
-                </a>
-              )}
-            </div>
-          </div>
-          {result.coverLetterName && (
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 font-medium">Cover letter:</span>
-              <span className="text-gray-300 font-medium">{result.coverLetterName}</span>
-            </div>
-          )}
+        {/* Application Reference ID */}
+        <div className="p-3.5 bg-google-gray-bg border border-google-border rounded-xl inline-flex flex-col sm:flex-row items-center justify-center gap-2 text-xs">
+          <span className="text-google-text-secondary font-medium">Application Reference ID:</span>
+          <span className="font-mono text-google-blue font-bold text-sm bg-white px-2.5 py-1 rounded border border-google-border shadow-2xs">
+            {result.transmissionId}
+          </span>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3 pt-2">
+        {/* Candidate Submitted Details Summary */}
+        <div className="bg-white border border-google-border rounded-xl p-5 text-left space-y-3 text-xs shadow-2xs">
+          <h3 className="text-xs font-semibold text-google-text-primary uppercase tracking-wide border-b border-google-border pb-2">
+            Application Summary
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Full Name</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.fullName}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Email Address</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.email}</span>
+            </div>
+
+            {result.instagramId && (
+              <div className="flex flex-col">
+                <span className="text-google-text-secondary font-medium text-[11px]">Instagram Handle</span>
+                <span className="text-pink-600 font-semibold mt-0.5">@{result.instagramId}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Current State</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.state}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Experience</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">
+                {result.experience} {result.yearsOfExperience ? `(${result.yearsOfExperience})` : ''}
+              </span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Preferred Location</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.preferredLocation}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Sector</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.sector}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Preferred Job Role</span>
+              <span className="text-google-blue font-semibold mt-0.5">{result.preferredJobRole}</span>
+            </div>
+
+            <div className="flex flex-col sm:col-span-2">
+              <span className="text-google-text-secondary font-medium text-[11px]">Uploaded Resume</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-google-green font-semibold">{result.resumeName}</span>
+                {result.resumeDriveLink && result.resumeDriveLink.startsWith('http') && (
+                  <a
+                    href={result.resumeDriveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-google-blue hover:underline flex items-center gap-0.5 bg-google-blue-bg px-2 py-0.5 rounded border border-google-blue-border/60"
+                  >
+                    <span>View in Drive</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {result.coverLetterName && (
+              <div className="flex flex-col sm:col-span-2">
+                <span className="text-google-text-secondary font-medium text-[11px]">Cover Letter</span>
+                <span className="text-google-text-primary font-medium mt-0.5">{result.coverLetterName}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <a
             href={FORM_CONFIG.brand.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2"
+            className="btn-google-primary w-full sm:w-auto text-sm px-6 py-3 flex items-center justify-center gap-2"
           >
+            <Instagram className="w-4 h-4 text-white" />
             <span>Connect on Instagram ({FORM_CONFIG.brand.instagramHandle})</span>
-            <span>↗</span>
+            <ArrowRight className="w-4 h-4" />
           </a>
 
           <button
             type="button"
             onClick={onReset}
-            className="w-full text-xs font-medium text-gray-400 hover:text-white bg-dark-bg hover:bg-dark-hover border border-dark-border px-4 py-2.5 rounded-lg transition-colors"
+            className="w-full sm:w-auto text-sm font-medium text-google-text-secondary hover:text-google-text-primary bg-white hover:bg-gray-50 border border-google-border px-5 py-3 rounded-lg transition-colors flex items-center justify-center gap-1.5"
           >
-            Submit another response
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Submit Another Application</span>
           </button>
         </div>
       </div>

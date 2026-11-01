@@ -4,9 +4,9 @@
 
 @layer base {
   body {
-    background-color: #0A0E17;
-    color: #F3F4F6;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #F8F9FA;
+    color: #202124;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -17,88 +17,96 @@
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #0A0E17;
+    background: #F1F3F4;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1F293D;
+    background: #DADCE0;
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #374151;
+    background: #BDC1C6;
   }
 }
 
-/* Standard Clean Input */
-.form-input-field {
-  background-color: #0D1322;
-  border: 1px solid #1F293D;
-  color: #F9FAFB;
+/* Google Standard Form Input Field */
+.google-input {
+  background-color: #FFFFFF;
+  border: 1px solid #DADCE0;
+  color: #202124;
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
+  line-height: 1.25rem;
   transition: all 150ms ease-in-out;
   width: 100%;
 }
 
-.form-input-field:focus {
+.google-input:focus {
   outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 1px #3B82F6;
-  background-color: #111827;
+  border-color: #1A73E8;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
-.form-input-field::placeholder {
-  color: #4B5563;
+.google-input::placeholder {
+  color: #80868B;
 }
 
-.form-input-field:disabled {
-  opacity: 0.6;
+.google-input:disabled {
+  background-color: #F1F3F4;
+  color: #80868B;
   cursor: not-allowed;
 }
 
-/* Standard Select */
-.form-select-field {
-  background-color: #0D1322;
-  border: 1px solid #1F293D;
-  color: #F9FAFB;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  transition: all 150ms ease-in-out;
-  width: 100%;
-  cursor: pointer;
-}
-
-.form-select-field:focus {
-  outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 1px #3B82F6;
-}
-
-/* Primary Button */
-.btn-primary {
-  background-color: #2563EB;
+/* Google Standard Primary Button */
+.btn-google-primary {
+  background-color: #1A73E8;
   color: #FFFFFF;
   border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  padding: 0.875rem 1.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.75rem;
   transition: all 150ms ease-in-out;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: #1D4ED8;
-  transform: translateY(-1px);
+.btn-google-primary:hover:not(:disabled) {
+  background-color: #1765CC;
+  box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
 }
 
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+.btn-google-primary:active:not(:disabled) {
+  background-color: #1557B0;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3);
 }
 
-.btn-primary:disabled {
+.btn-google-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Google Card Styling */
+.google-card {
+  background-color: #FFFFFF;
+  border: 1px solid #DADCE0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.08), 0 1px 3px 1px rgba(60,64,67,0.04);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 250ms ease-out forwards;
 }
