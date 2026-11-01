@@ -36,8 +36,7 @@ export const FORM_CONFIG = {
 
   /**
    * GOOGLE APPS SCRIPT WEBHOOK URL:
-   * Paste your deployed Google Apps Script Web App URL here (from google-apps-script/Code.gs).
-   * This guarantees 100% delivery even if Google login restrictions or file uploads are active!
+   * Connected directly to your Google Sheet and Google Drive folder!
    */
-  appsScriptWebhookUrl: '',
+  appsScriptWebhookUrl: 'https://script.google.com/macros/s/AKfycby4pcGB2KA5ss-tByzIw1b8twHhwYM91f2bLqmFFf37r5-KkaFvxGA5nDtCoB9k4BUe/exec',
 };
