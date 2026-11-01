@@ -215,12 +215,25 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         [FORM_CONFIG.googleForm.entryIds.preferredLocation]: formData.preferredLocation,
         [FORM_CONFIG.googleForm.entryIds.sector]: formData.sector,
         [FORM_CONFIG.googleForm.entryIds.preferredJobRole]: formData.preferredJobRole.trim(),
-        [FORM_CONFIG.googleForm.entryIds.resume]:
-          formData.resumeCloudLink.trim() ||
-          (formData.resumeFile ? `Uploaded Resume: ${formData.resumeFileName}` : 'Pending'),
-        [FORM_CONFIG.googleForm.entryIds.coverLetter]:
-          formData.coverLetterFileName ? `Uploaded Cover Letter: ${formData.coverLetterFileName}` : (formData.coverLetterText.trim() || 'N/A'),
+        // Hidden required Google Form tokens
+        fvv: '1',
+        pageHistory: '0',
+        // Radio sentinels
+        [`${FORM_CONFIG.googleForm.entryIds.experience}_sentinel`]: '',
+        [`${FORM_CONFIG.googleForm.entryIds.preferredLocation}_sentinel`]: '',
+        [`${FORM_CONFIG.googleForm.entryIds.sector}_sentinel`]: '',
       };
+
+      // Only add resume/coverLetter if valid entry IDs exist
+      if (!FORM_CONFIG.googleForm.entryIds.resume.includes('placeholder')) {
+        entryMap[FORM_CONFIG.googleForm.entryIds.resume] =
+          formData.resumeCloudLink.trim() ||
+          (formData.resumeFile ? `Uploaded Resume: ${formData.resumeFileName}` : 'Pending');
+      }
+      if (!FORM_CONFIG.googleForm.entryIds.coverLetter.includes('placeholder')) {
+        entryMap[FORM_CONFIG.googleForm.entryIds.coverLetter] =
+          formData.coverLetterFileName ? `Uploaded Cover Letter: ${formData.coverLetterFileName}` : (formData.coverLetterText.trim() || 'N/A');
+      }
 
       Object.entries(entryMap).forEach(([k, v]) => {
         const inp = document.createElement('input');

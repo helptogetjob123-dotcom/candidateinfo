@@ -78,10 +78,7 @@ export const App: React.FC = () => {
                     : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
-                <span>Official Google Form</span>
-                <span className="text-[10px] bg-white/20 px-1.5 py-0.2 rounded font-mono">
-                  Recommended
-                </span>
+                <span>📄 Official Google Form</span>
               </button>
 
               <button
@@ -93,7 +90,7 @@ export const App: React.FC = () => {
                     : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
-                <span>Alternative Custom Form</span>
+                <span>🌙 100% Dark Theme (Custom Form)</span>
               </button>
             </div>
           </div>
