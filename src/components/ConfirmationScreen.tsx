@@ -12,7 +12,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
   onReset,
 }) => {
   return (
-    <div className="w-full max-w-lg mx-auto py-8 text-center">
+    <div className="w-full max-w-lg mx-auto py-8 text-center animate-fadeIn">
       <div className="bg-dark-card border border-dark-border rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
         {/* Success Icon */}
         <div className="w-14 h-14 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mx-auto border border-green-500/20">
@@ -26,11 +26,11 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             helptogetjob
           </h1>
           <p className="text-gray-400 text-sm mt-1.5">
-            Your response has been recorded.
+            Your application response has been recorded successfully.
           </p>
         </div>
 
-        {/* Summary Details */}
+        {/* Candidate Submitted Details Summary */}
         <div className="bg-dark-bg border border-dark-border rounded-lg p-4 text-left space-y-2.5 text-xs">
           <div className="flex items-center justify-between border-b border-dark-border pb-2">
             <span className="text-gray-400 font-medium">Reference ID</span>
@@ -44,10 +44,44 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             <span className="text-gray-400 font-medium">E-mail:</span>
             <span className="text-white font-medium">{result.email}</span>
           </div>
+          {result.instagramId && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 font-medium">insta ID:</span>
+              <span className="text-pink-400 font-medium">@{result.instagramId}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">insta ID:</span>
-            <span className="text-pink-400 font-medium">@{result.instagramId}</span>
+            <span className="text-gray-400 font-medium">State:</span>
+            <span className="text-white font-medium">{result.state}</span>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">Experience:</span>
+            <span className="text-white font-medium">
+              {result.experience} {result.yearsOfExperience ? `(${result.yearsOfExperience})` : ''}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">Preffered Location:</span>
+            <span className="text-white font-medium">{result.preferredLocation}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">Sector:</span>
+            <span className="text-white font-medium">{result.sector}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">Preffered Job Role:</span>
+            <span className="text-blue-300 font-medium">{result.preferredJobRole}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">Updated Resume:</span>
+            <span className="text-green-400 font-medium">{result.resumeName}</span>
+          </div>
+          {result.coverLetterName && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 font-medium">Cover letter:</span>
+              <span className="text-gray-300 font-medium">{result.coverLetterName}</span>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
