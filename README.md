@@ -101,3 +101,4 @@ This repository is 100% static and pre-configured for GitHub Pages:
 2. In GitHub, go to **Settings** > **Pages**.
 3. Under **Build and deployment** > **Source**, select **GitHub Actions**.
 4. The included `.github/workflows/deploy.yml` will automatically build and publish the site on every push to `main`!
+# candidateinfo
