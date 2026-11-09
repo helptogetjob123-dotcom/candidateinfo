@@ -119,43 +119,95 @@ function doPost(e) {
     }
     var sheet = spreadsheet.getSheets()[0];
     
-    // Ensure header row exists with the exact form questions if empty
+    // Ensure header row exists with all columns if empty
+    var defaultHeaders = [
+      "Transmission ID",
+      "Timestamp",
+      "Name:",
+      "E-mail",
+      "insta ID",
+      "Education",
+      "State",
+      "Experience",
+      "If Experienced Mention the Years of experience",
+      "Preffered Location",
+      "Sector",
+      "Preffered Job Role",
+      "Updated Resume (Drive Link)",
+      "Cover letter"
+    ];
+
     if (sheet.getLastRow() === 0) {
-      var headerRow = [
-        "Transmission ID",
-        "Timestamp",
-        "Name:",
-        "E-mail",
-        "insta ID",
-        "State",
-        "Experience",
-        "If Experienced Mention the Years of experience",
-        "Preffered Location",
-        "Sector",
-        "Preffered Job Role",
-        "Updated Resume (Drive Link)",
-        "Cover letter"
-      ];
-      sheet.appendRow(headerRow);
-      sheet.getRange(1, 1, 1, headerRow.length).setFontWeight("bold").setBackground("#1F293D").setFontColor("#FFFFFF");
+      sheet.appendRow(defaultHeaders);
+      sheet.getRange(1, 1, 1, defaultHeaders.length).setFontWeight("bold").setBackground("#1F293D").setFontColor("#FFFFFF");
       sheet.setFrozenRows(1);
     }
 
-    sheet.appendRow([
-      transmissionId,
-      timestamp,
-      formData.fullName || "",
-      formData.email || "",
-      formData.instagramId || "",
-      formData.state || "",
-      formData.experience || "",
-      formData.yearsOfExperience || "",
-      formData.preferredLocation || "",
-      formData.sector || "",
-      formData.preferredJobRole || "",
-      resumeDriveLink,
-      coverLetterInfo
-    ]);
+    // Read existing headers from row 1 to prevent breaking existing entries/columns
+    var lastCol = Math.max(sheet.getLastColumn(), 1);
+    var currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+
+    // Check if Education column exists in the sheet; if not, safely append Education at the end
+    // so no existing column alignments or previous candidate entries are shifted or displaced
+    var hasEducation = false;
+    for (var c = 0; c < currentHeaders.length; c++) {
+      var hText = String(currentHeaders[c] || "").trim().toLowerCase();
+      if (hText.indexOf("education") > -1 || hText.indexOf("qualification") > -1 || hText.indexOf("degree") > -1) {
+        hasEducation = true;
+        break;
+      }
+    }
+
+    if (!hasEducation) {
+      var newColIdx = currentHeaders.length + 1;
+      sheet.getRange(1, newColIdx).setValue("Education")
+        .setFontWeight("bold")
+        .setBackground("#1F293D")
+        .setFontColor("#FFFFFF");
+      currentHeaders.push("Education");
+    }
+
+    // Dynamic header-matching row builder:
+    // This guarantees that regardless of column order or presence of older entries,
+    // every value is written into its matching column header without shifting existing data!
+    var rowData = new Array(currentHeaders.length);
+    for (var i = 0; i < currentHeaders.length; i++) {
+      var h = String(currentHeaders[i] || "").trim().toLowerCase();
+      
+      if (matchesHeader(h, ["transmission id", "transmissionid", "id"])) {
+        rowData[i] = transmissionId;
+      } else if (matchesHeader(h, ["timestamp", "date", "time"])) {
+        rowData[i] = timestamp;
+      } else if (matchesHeader(h, ["name:", "name", "full name", "candidate name"])) {
+        rowData[i] = formData.fullName || "";
+      } else if (matchesHeader(h, ["e-mail", "email", "email address"])) {
+        rowData[i] = formData.email || "";
+      } else if (matchesHeader(h, ["insta id", "instagram id", "instagram handle", "instagram"])) {
+        rowData[i] = formData.instagramId || "";
+      } else if (matchesHeader(h, ["education", "qualification", "degree"])) {
+        rowData[i] = formData.education || "";
+      } else if (matchesHeader(h, ["state", "current state", "location (state)"])) {
+        rowData[i] = formData.state || "";
+      } else if (matchesHeader(h, ["if experienced mention the years of experience", "years of experience"])) {
+        rowData[i] = formData.yearsOfExperience || "";
+      } else if (matchesHeader(h, ["experience"])) {
+        rowData[i] = formData.experience || "";
+      } else if (matchesHeader(h, ["preffered location", "preferred location", "location"])) {
+        rowData[i] = formData.preferredLocation || "";
+      } else if (matchesHeader(h, ["sector", "industry"])) {
+        rowData[i] = formData.sector || "";
+      } else if (matchesHeader(h, ["preffered job role", "preferred job role", "job role", "role"])) {
+        rowData[i] = formData.preferredJobRole || "";
+      } else if (matchesHeader(h, ["updated resume", "resume", "drive link"])) {
+        rowData[i] = resumeDriveLink;
+      } else if (matchesHeader(h, ["cover letter", "coverletter"])) {
+        rowData[i] = coverLetterInfo;
+      } else {
+        rowData[i] = "";
+      }
+    }
+
+    sheet.appendRow(rowData);
 
     return createJsonResponse({
       status: "success",
@@ -170,6 +222,17 @@ function doPost(e) {
       message: error.toString()
     });
   }
+}
+
+// Utility: Match header helper against string variants
+function matchesHeader(headerText, variants) {
+  var clean = String(headerText || "").trim().toLowerCase();
+  for (var i = 0; i < variants.length; i++) {
+    if (clean === variants[i] || clean.indexOf(variants[i]) > -1) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function doGet(e) {

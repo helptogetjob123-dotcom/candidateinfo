@@ -23,6 +23,7 @@ export const FORM_CONFIG = {
       fullName: 'entry.1672635230',         // Name:
       email: 'entry.1328940444',            // E-mail
       instagramId: 'entry.419558734',       // insta ID
+      education: 'entry.education_placeholder', // Education / Qualification
       state: 'entry.730549692',             // State
       experience: 'entry.2038274577',       // Experience (Fresher / Experienced)
       yearsOfExperience: 'entry.554012743', // If Experienced Mention the Years of experience

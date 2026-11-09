@@ -1,7 +1,8 @@
 export interface CandidateFormData {
   fullName: string;           // Name:
   email: string;              // E-mail
-  instagramId: string;        // insta ID
+  instagramId: string;        // insta ID (Compulsory)
+  education: string;          // Education / Highest Qualification (Compulsory)
   state: string;              // State
   experience: string;         // Experience ('Fresher' | 'Experienced')
   yearsOfExperience: string;  // If Experienced Mention the Years of experience
@@ -31,6 +32,7 @@ export interface FormSubmissionResult {
   fullName: string;
   email: string;
   instagramId: string;
+  education: string;
   state: string;
   experience: string;
   yearsOfExperience?: string;

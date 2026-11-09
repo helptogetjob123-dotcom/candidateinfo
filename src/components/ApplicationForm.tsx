@@ -4,7 +4,6 @@ import { FORM_CONFIG } from '../config/formConfig';
 import { 
   User, 
   MapPin, 
-  Briefcase, 
   FileText, 
   UploadCloud, 
   CheckCircle, 
@@ -13,7 +12,8 @@ import {
   X, 
   ArrowRight,
   ShieldCheck,
-  Link as LinkIcon
+  Link as LinkIcon,
+  GraduationCap
 } from 'lucide-react';
 
 interface ApplicationFormProps {
@@ -24,6 +24,7 @@ const INITIAL_FORM_DATA: CandidateFormData = {
   fullName: '',
   email: '',
   instagramId: '',
+  education: '',
   state: '',
   experience: '',
   yearsOfExperience: '',
@@ -71,6 +72,8 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
     const requiredChecks = [
       formData.fullName.trim(),
       formData.email.trim(),
+      formData.instagramId.trim(),
+      formData.education.trim(),
       formData.state.trim(),
       formData.experience,
       formData.preferredLocation,
@@ -189,6 +192,14 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
       errs.email = 'Please enter a valid email address.';
     }
 
+    if (!formData.instagramId.trim()) {
+      errs.instagramId = 'Please enter your Instagram handle.';
+    }
+
+    if (!formData.education.trim()) {
+      errs.education = 'Please enter your education qualification.';
+    }
+
     if (!formData.state.trim()) errs.state = 'Please mention your current state.';
     if (!formData.experience) errs.experience = 'Please select your experience status.';
     if (formData.experience === 'Experienced' && !formData.yearsOfExperience.trim()) {
@@ -247,6 +258,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
       setSubmitStatusMessage('Uploading resume & logging response...');
 
       let resolvedResumeDriveLink: string | undefined = undefined;
+      const cleanInstagramId = formData.instagramId.trim().replace(/^@+/, '');
 
       // Primary: Google Apps Script Webhook
       if (FORM_CONFIG.appsScriptWebhookUrl && FORM_CONFIG.appsScriptWebhookUrl.trim() !== '') {
@@ -257,7 +269,8 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
             formData: {
               fullName: formData.fullName.trim(),
               email: formData.email.trim(),
-              instagramId: formData.instagramId.trim() || 'N/A',
+              instagramId: cleanInstagramId,
+              education: formData.education.trim(),
               state: formData.state.trim(),
               experience: formData.experience,
               yearsOfExperience: formData.experience === 'Experienced' ? formData.yearsOfExperience.trim() : '0',
@@ -299,7 +312,8 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         timestamp,
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
-        instagramId: formData.instagramId.trim(),
+        instagramId: cleanInstagramId,
+        education: formData.education.trim(),
         state: formData.state.trim(),
         experience: formData.experience,
         yearsOfExperience: formData.experience === 'Experienced' ? formData.yearsOfExperience : undefined,
@@ -408,7 +422,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="instagramId" className="block text-xs font-semibold text-google-text-primary mb-1.5">
-                  Instagram Handle <span className="text-google-text-tertiary font-normal">(Optional)</span>
+                  Instagram Handle <span className="text-google-red">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-google-text-tertiary font-medium">
@@ -418,14 +432,21 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
                     id="instagramId"
                     type="text"
                     name="instagramId"
+                    required
                     value={formData.instagramId}
                     onChange={handleInputChange}
                     placeholder="your_handle"
-                    className="google-input pl-7"
+                    className={`google-input pl-7 ${errors.instagramId ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
                   />
                 </div>
+                {errors.instagramId && (
+                  <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.instagramId}
+                  </p>
+                )}
                 <p className="text-[11px] text-google-text-secondary mt-1">
-                  Allows direct DM notifications from {FORM_CONFIG.brand.instagramHandle}.
+                  Required for mentor verification & direct DM updates from {FORM_CONFIG.brand.instagramHandle}.
                 </p>
               </div>
 
@@ -455,25 +476,51 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmitSucces
         </div>
 
         {/* ============================================================ */}
-        {/* SECTION 2: EXPERIENCE & BACKGROUND */}
+        {/* SECTION 2: EDUCATION & EXPERIENCE */}
         {/* ============================================================ */}
         <div className="google-card p-6 sm:p-8">
           <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-google-border/70">
             <div className="w-8 h-8 rounded-full bg-google-blue-bg text-google-blue flex items-center justify-center shrink-0">
-              <Briefcase className="w-4 h-4" />
+              <GraduationCap className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-google-text-primary">
-                2. Experience & Background
+                2. Education & Experience
               </h2>
               <p className="text-xs text-google-text-secondary">
-                Select your current career stage to help us match appropriate openings.
+                Provide your educational qualification and career stage to help us match appropriate openings.
               </p>
             </div>
           </div>
 
           <div className="space-y-5">
-            {/* 5. Experience Radio Tiles */}
+            {/* 5. Education / Highest Qualification */}
+            <div>
+              <label htmlFor="education" className="block text-xs font-semibold text-google-text-primary mb-1.5">
+                Education / Highest Qualification <span className="text-google-red">*</span>
+              </label>
+              <input
+                id="education"
+                type="text"
+                name="education"
+                required
+                value={formData.education}
+                onChange={handleInputChange}
+                placeholder="e.g. B.Tech / BE in CSE, BCA, MCA, B.Sc, B.Com, MBA, Diploma"
+                className={`google-input ${errors.education ? 'border-google-red ring-1 ring-google-red/20' : ''}`}
+              />
+              {errors.education && (
+                <p className="text-xs text-google-red mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {errors.education}
+                </p>
+              )}
+              <p className="text-[11px] text-google-text-secondary mt-1">
+                Mention your highest degree, branch/specialization, or graduation year.
+              </p>
+            </div>
+
+            {/* 6. Experience Radio Tiles */}
             <div>
               <label className="block text-xs font-semibold text-google-text-primary mb-2">
                 Experience Level <span className="text-google-red">*</span>

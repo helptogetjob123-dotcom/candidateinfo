@@ -57,12 +57,15 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
               <span className="text-google-text-primary font-semibold mt-0.5">{result.email}</span>
             </div>
 
-            {result.instagramId && (
-              <div className="flex flex-col">
-                <span className="text-google-text-secondary font-medium text-[11px]">Instagram Handle</span>
-                <span className="text-pink-600 font-semibold mt-0.5">@{result.instagramId}</span>
-              </div>
-            )}
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Instagram Handle</span>
+              <span className="text-pink-600 font-semibold mt-0.5">@{result.instagramId.replace(/^@+/, '')}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-google-text-secondary font-medium text-[11px]">Education / Qualification</span>
+              <span className="text-google-text-primary font-semibold mt-0.5">{result.education}</span>
+            </div>
 
             <div className="flex flex-col">
               <span className="text-google-text-secondary font-medium text-[11px]">Current State</span>
