@@ -27,7 +27,7 @@ export const App: React.FC = () => {
           {/* Status Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-google-green-bg text-google-green border border-google-green/20">
             <span className="w-2 h-2 rounded-full bg-google-green" />
-            <span>Applications Open — 2025 Hiring Season</span>
+            <span>Applications Open — 2026 Hiring Season</span>
           </div>
 
           {/* Main Title */}
