@@ -2,15 +2,13 @@
  * HELP TO GET JOB // GOOGLE APPS SCRIPT WEBHOOK & DRIVE BACKEND
  * 
  * Instructions:
- * 1. Open your Google Sheet (where responses should go).
+ * 1. Open your Google Sheet (where responses should go):
+ *    https://docs.google.com/spreadsheets/d/1UDzaOSSB02uK3JT59VMg85oiQORxRUNt0_vMh7vCeWE/edit
  * 2. Click Extensions > Apps Script.
- * 3. Replace all existing code with this file.
- * 4. (Optional) Paste your Google Drive Folder ID in TARGET_FOLDER_ID below.
- *    If left blank, it will automatically create a folder named "Help to Get Job - Resumes" in your Drive.
- * 5. Click Deploy > New deployment > Web app:
- *    - Execute as: Me (your email)
- *    - Who has access: Anyone
- * 6. Copy the Web app URL and paste it into src/config/formConfig.ts.
+ * 3. Replace all existing code with this file and save (Cmd+S / Ctrl+S).
+ * 4. To deploy updates: Click Deploy > Manage deployments > Click Edit (pencil icon) > Version: New version > Deploy.
+ * 5. (Bonus) To automatically fix past rows where resume links were missing:
+ *    In the Apps Script editor, select "fixMissingResumeLinks" from the function dropdown and click "Run".
  */
 
 // Google Sheet ID for candidate data rows:
@@ -44,7 +42,6 @@ function doPost(e) {
       try {
         folder = DriveApp.getFolderById(TARGET_FOLDER_ID.trim());
       } catch (fErr) {
-        // Fallback to name search or auto-create if ID is invalid
         folder = getOrCreateFolder("Help to Get Job - Resumes");
       }
     } else {
@@ -62,14 +59,12 @@ function doPost(e) {
         var decodedBytes = Utilities.base64Decode(base64Data);
         var mimeType = getMimeType(formData.resumeFileName);
         
-        // Clean professional file naming: [HTGJ-2025-XXXX] CandidateName_Resume.pdf
         var cleanCandidateName = (formData.fullName || "Candidate").replace(/[^a-zA-Z0-9_-]/g, "_");
         var destinationFileName = "[" + transmissionId + "] " + cleanCandidateName + "_" + formData.resumeFileName;
         
         var blob = Utilities.newBlob(decodedBytes, mimeType, destinationFileName);
         var driveFile = folder.createFile(blob);
         
-        // Ensure the file is viewable by recruiters & mentors who have the link
         try {
           driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
         } catch (permErr) {}
@@ -119,7 +114,7 @@ function doPost(e) {
     }
     var sheet = spreadsheet.getSheets()[0];
     
-    // Ensure header row exists with all columns if empty
+    // Default headers if spreadsheet is completely empty
     var defaultHeaders = [
       "Transmission ID",
       "Timestamp",
@@ -143,12 +138,11 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     }
 
-    // Read existing headers from row 1 to prevent breaking existing entries/columns
+    // Read existing headers from row 1
     var lastCol = Math.max(sheet.getLastColumn(), 1);
     var currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
 
     // Check if Education column exists in the sheet; if not, safely append Education at the end
-    // so no existing column alignments or previous candidate entries are shifted or displaced
     var hasEducation = false;
     for (var c = 0; c < currentHeaders.length; c++) {
       var hText = String(currentHeaders[c] || "").trim().toLowerCase();
@@ -167,44 +161,20 @@ function doPost(e) {
       currentHeaders.push("Education");
     }
 
-    // Dynamic header-matching row builder:
-    // This guarantees that regardless of column order or presence of older entries,
-    // every value is written into its matching column header without shifting existing data!
+    // Robust, Priority-based Column Mapping:
+    // Guarantees zero collisions between "Updated Resume" (which contains "date") and "Timestamp",
+    // and zero collisions between "insta ID" (which contains "id") and "Transmission ID".
+    var contextData = {
+      transmissionId: transmissionId,
+      timestamp: timestamp,
+      formData: formData,
+      resumeDriveLink: resumeDriveLink,
+      coverLetterInfo: coverLetterInfo
+    };
+
     var rowData = new Array(currentHeaders.length);
     for (var i = 0; i < currentHeaders.length; i++) {
-      var h = String(currentHeaders[i] || "").trim().toLowerCase();
-      
-      if (matchesHeader(h, ["transmission id", "transmissionid", "id"])) {
-        rowData[i] = transmissionId;
-      } else if (matchesHeader(h, ["timestamp", "date", "time"])) {
-        rowData[i] = timestamp;
-      } else if (matchesHeader(h, ["name:", "name", "full name", "candidate name"])) {
-        rowData[i] = formData.fullName || "";
-      } else if (matchesHeader(h, ["e-mail", "email", "email address"])) {
-        rowData[i] = formData.email || "";
-      } else if (matchesHeader(h, ["insta id", "instagram id", "instagram handle", "instagram"])) {
-        rowData[i] = formData.instagramId || "";
-      } else if (matchesHeader(h, ["education", "qualification", "degree"])) {
-        rowData[i] = formData.education || "";
-      } else if (matchesHeader(h, ["state", "current state", "location (state)"])) {
-        rowData[i] = formData.state || "";
-      } else if (matchesHeader(h, ["if experienced mention the years of experience", "years of experience"])) {
-        rowData[i] = formData.yearsOfExperience || "";
-      } else if (matchesHeader(h, ["experience"])) {
-        rowData[i] = formData.experience || "";
-      } else if (matchesHeader(h, ["preffered location", "preferred location", "location"])) {
-        rowData[i] = formData.preferredLocation || "";
-      } else if (matchesHeader(h, ["sector", "industry"])) {
-        rowData[i] = formData.sector || "";
-      } else if (matchesHeader(h, ["preffered job role", "preferred job role", "job role", "role"])) {
-        rowData[i] = formData.preferredJobRole || "";
-      } else if (matchesHeader(h, ["updated resume", "resume", "drive link"])) {
-        rowData[i] = resumeDriveLink;
-      } else if (matchesHeader(h, ["cover letter", "coverletter"])) {
-        rowData[i] = coverLetterInfo;
-      } else {
-        rowData[i] = "";
-      }
+      rowData[i] = resolveColumnValue(currentHeaders[i], contextData);
     }
 
     sheet.appendRow(rowData);
@@ -224,15 +194,177 @@ function doPost(e) {
   }
 }
 
-// Utility: Match header helper against string variants
-function matchesHeader(headerText, variants) {
-  var clean = String(headerText || "").trim().toLowerCase();
-  for (var i = 0; i < variants.length; i++) {
-    if (clean === variants[i] || clean.indexOf(variants[i]) > -1) {
-      return true;
+/**
+ * Priority-based Column Resolver
+ * Prevents substring bugs like "updated" matching "date" or "insta id" matching "id".
+ */
+function resolveColumnValue(headerText, data) {
+  var h = String(headerText || "").trim().toLowerCase();
+
+  // 1. Resume (Check FIRST so "updated" in "Updated Resume" never matches "date"!)
+  if (h.indexOf("resume") > -1 || h.indexOf("drive link") > -1 || h.indexOf("cv") > -1) {
+    return data.resumeDriveLink;
+  }
+
+  // 2. Cover Letter
+  if (h.indexOf("cover") > -1) {
+    return data.coverLetterInfo;
+  }
+
+  // 3. Instagram ID (Check before Transmission ID so "insta id" matches Instagram!)
+  if (h.indexOf("insta") > -1 || h.indexOf("instagram") > -1) {
+    return data.formData.instagramId || "";
+  }
+
+  // 4. Transmission / Reference ID
+  if (h.indexOf("transmission") > -1 || h.indexOf("reference") > -1 || h === "id" || h === "app id") {
+    return data.transmissionId;
+  }
+
+  // 5. Years of experience (Check before general "experience")
+  if (h.indexOf("years") > -1 || h.indexOf("if experienced") > -1) {
+    return data.formData.yearsOfExperience || "";
+  }
+
+  // 6. Experience Level
+  if (h.indexOf("experience") > -1) {
+    return data.formData.experience || "";
+  }
+
+  // 7. Preferred Job Role (Check before general "job")
+  if (h.indexOf("role") > -1 || h.indexOf("job") > -1) {
+    return data.formData.preferredJobRole || "";
+  }
+
+  // 8. Preferred Location (Check before general "state")
+  if (h.indexOf("location") > -1 || h.indexOf("preferred") > -1 || h.indexOf("preffered") > -1 || h.indexOf("city") > -1) {
+    return data.formData.preferredLocation || "";
+  }
+
+  // 9. State
+  if (h.indexOf("state") > -1) {
+    return data.formData.state || "";
+  }
+
+  // 10. Education / Qualification
+  if (h.indexOf("education") > -1 || h.indexOf("qualification") > -1 || h.indexOf("degree") > -1) {
+    return data.formData.education || "";
+  }
+
+  // 11. Sector / Industry
+  if (h.indexOf("sector") > -1 || h.indexOf("industry") > -1) {
+    return data.formData.sector || "";
+  }
+
+  // 12. Email
+  if (h.indexOf("mail") > -1) {
+    return data.formData.email || "";
+  }
+
+  // 13. Full Name
+  if (h.indexOf("name") > -1) {
+    return data.formData.fullName || "";
+  }
+
+  // 14. Timestamp / Submission Date (Must exclude "update" to never match "updated resume")
+  if (h.indexOf("update") === -1 && (h.indexOf("time") > -1 || h.indexOf("date") > -1 || h.indexOf("submitted") > -1)) {
+    return data.timestamp;
+  }
+
+  return "";
+}
+
+/**
+ * REPAIR UTILITY: Automatically restores Google Drive resume links into your Google Sheet!
+ * 
+ * Run this function once from the Apps Script editor toolbar:
+ * Select "fixMissingResumeLinks" in the dropdown -> Click "Run".
+ * It will find all uploaded resume files in your Google Drive folder and match them
+ * to the candidate rows in your Google Sheet by Transmission ID!
+ */
+function fixMissingResumeLinks() {
+  var spreadsheet = SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheets()[0];
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2) {
+    Logger.log("No data rows found to repair.");
+    return "No data rows found to repair.";
+  }
+
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var resumeColIdx = -1;
+  var transColIdx = -1;
+
+  for (var c = 0; c < headers.length; c++) {
+    var h = String(headers[c] || "").trim().toLowerCase();
+    if (h.indexOf("resume") > -1 || h.indexOf("drive link") > -1) {
+      resumeColIdx = c + 1; // 1-indexed for getRange
+    }
+    if (h.indexOf("transmission") > -1) {
+      transColIdx = c + 1;
     }
   }
-  return false;
+
+  if (resumeColIdx === -1) {
+    Logger.log("Could not find Resume column.");
+    return "Could not find Resume column.";
+  }
+
+  // Index all uploaded files in Google Drive by Transmission ID
+  var folder = DriveApp.getFolderById(TARGET_FOLDER_ID);
+  var files = folder.getFiles();
+  var fileMap = {};
+
+  while (files.hasNext()) {
+    var file = files.next();
+    var name = file.getName();
+    // File format: [HTGJ-2026-XXXX] ...
+    var match = name.match(/\[(HTGJ-[^\]]+)\]/);
+    if (match && match[1]) {
+      fileMap[match[1]] = file.getUrl();
+    }
+  }
+
+  var fixedCount = 0;
+  var rowValues = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  for (var r = 0; r < rowValues.length; r++) {
+    var currentRow = rowValues[r];
+    var currentResumeVal = String(currentRow[resumeColIdx - 1] || "").trim();
+
+    // If the cell does not have a valid http link (e.g. has a timestamp or "Not Provided")
+    if (!currentResumeVal.startsWith("http")) {
+      // Find the HTGJ- transmission ID in this row
+      var rowTransId = "";
+      if (transColIdx > -1 && String(currentRow[transColIdx - 1] || "").startsWith("HTGJ-")) {
+        rowTransId = String(currentRow[transColIdx - 1]).trim();
+      }
+
+      if (!rowTransId) {
+        for (var k = 0; k < currentRow.length; k++) {
+          var cellText = String(currentRow[k] || "").trim();
+          if (cellText.indexOf("HTGJ-") > -1) {
+            var m = cellText.match(/HTGJ-\d{4}-\d+/);
+            if (m) {
+              rowTransId = m[0];
+              break;
+            }
+          }
+        }
+      }
+
+      if (rowTransId && fileMap[rowTransId]) {
+        sheet.getRange(r + 2, resumeColIdx).setValue(fileMap[rowTransId]);
+        fixedCount++;
+        Logger.log("Row " + (r + 2) + " (" + rowTransId + ") -> Restored Drive link: " + fileMap[rowTransId]);
+      }
+    }
+  }
+
+  var msg = "SUCCESS: Repaired " + fixedCount + " candidate rows with their Google Drive resume links!";
+  Logger.log(msg);
+  return msg;
 }
 
 function doGet(e) {
@@ -245,7 +377,6 @@ function doGet(e) {
   });
 }
 
-// Utility: Helper to get or create folder by name
 function getOrCreateFolder(folderName) {
   var folders = DriveApp.getFoldersByName(folderName);
   if (folders.hasNext()) {
@@ -254,7 +385,6 @@ function getOrCreateFolder(folderName) {
   return DriveApp.createFolder(folderName);
 }
 
-// Utility: MIME Type resolver
 function getMimeType(fileName) {
   if (!fileName) return "application/octet-stream";
   var lower = fileName.toLowerCase();
@@ -266,7 +396,6 @@ function getMimeType(fileName) {
   return "application/octet-stream";
 }
 
-// Utility: JSON response formatter with permissive headers
 function createJsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
